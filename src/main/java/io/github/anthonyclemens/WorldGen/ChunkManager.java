@@ -1,28 +1,26 @@
 package io.github.anthonyclemens.WorldGen;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.newdawn.slick.util.Log;
 
 import io.github.anthonyclemens.GameObjects.GameObject;
-import io.github.anthonyclemens.Rendering.IsoRenderer;
 
 /**
  * Manages world chunks, their generation, and biome assignment.
  * Handles chunk caching and provides utilities for chunk/block lookup.
  */
-public class ChunkManager implements Serializable {
+public class ChunkManager{
     public static final int CHUNK_SIZE = 24;
     private final Map<String, Chunk> chunks = new ConcurrentHashMap<>();
     private final int seed;
-    private transient IsoRenderer isoRenderer;
-    private transient PerlinNoise elevationGen;
-    private transient PerlinNoise moistureGen;
-    private transient PerlinNoise temperatureGen;
+    private PerlinNoise elevationGen;
+    private PerlinNoise moistureGen;
+    private PerlinNoise temperatureGen;
     // Biome generation tuning parameters
     private static final double ELEVATION_FREQ = 0.010;
     private static final double MOISTURE_FREQ = 0.028;
@@ -46,22 +44,6 @@ public class ChunkManager implements Serializable {
         this.moistureGen = new PerlinNoise(seed + 1123);
         this.temperatureGen = new PerlinNoise(seed + 56424);
         Log.debug("ChunkManager initialized for infinite world generation with seed: " + seed);
-    }
-
-    /**
-     * Attaches an IsoRenderer for rendering purposes.
-     * @param isoRenderer The renderer to attach.
-     */
-    public void attachRenderer(IsoRenderer isoRenderer) {
-        this.isoRenderer = isoRenderer;
-    }
-
-    /**
-     * Gets the attached IsoRenderer.
-     * @return The IsoRenderer instance.
-     */
-    public IsoRenderer getIsoRenderer() {
-        return this.isoRenderer;
     }
 
     /**
@@ -174,8 +156,8 @@ public class ChunkManager implements Serializable {
      * @param chunkX Chunk X coordinate.
      * @param chunkY Chunk Y coordinate.
      */
-    public void removeGameObject(int idx, int chunkX, int chunkY) {
-        this.getChunk(chunkX, chunkY).removeGameObject(idx);
+    public void removeGameObject(UUID uuid, int chunkX, int chunkY) {
+        this.getChunk(chunkX, chunkY).removeGameObject(uuid);
     }
 
     public int getSeed() {
@@ -194,12 +176,23 @@ public class ChunkManager implements Serializable {
     public void moveGameObjectToChunk(GameObject obj, int oldChunkX, int oldChunkY, int newChunkX, int newChunkY) {
         Chunk oldChunk = getChunk(oldChunkX, oldChunkY);
         if (obj != null && oldChunk.getGameObjects().contains(obj)) {
-            oldChunk.deleteGameObject(obj);
+            oldChunk.removeGameObject(obj.getUUID());
             Chunk newChunk = getChunk(newChunkX, newChunkY);
-            obj.setID(newChunk.getGameObjects().size());
             newChunk.addGameObject(obj);
+            newChunk.setDirty(true);
         } else {
-            Log.warn("GameObject not found in chunk (" + oldChunkX + ", " + oldChunkY + ")");
+            Log.warn("GameObject not found in chunk (" + oldChunkX + ", " + oldChunkY + ") - obj uuid: " + (obj!=null?obj.getUUID(): "null"));
+        }
+    }
+
+    public List<Chunk> getDirtyChunks() {
+        return chunks.values().stream().filter(Chunk::isDirty).toList();
+    }
+
+    public void addDirtyChunks(List<Chunk> dirtyChunks) {
+        for (Chunk chunk : dirtyChunks) {
+            String key = chunk.getChunkX() + "," + chunk.getChunkY();
+            chunks.put(key, chunk);
         }
     }
 

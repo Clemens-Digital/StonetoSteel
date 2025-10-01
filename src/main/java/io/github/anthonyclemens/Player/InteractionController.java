@@ -9,6 +9,7 @@ import org.newdawn.slick.util.Log;
 import io.github.anthonyclemens.GameObjects.GameObject;
 import io.github.anthonyclemens.GameObjects.SingleTileObjects.Item;
 import io.github.anthonyclemens.GameObjects.SingleTileObjects.Items;
+import io.github.anthonyclemens.Rendering.IsoRenderer;
 import io.github.anthonyclemens.WorldGen.Chunk;
 import io.github.anthonyclemens.WorldGen.ChunkManager;
 
@@ -19,13 +20,13 @@ public class InteractionController {
     }
 
 
-    public void interact(Input input, ChunkManager cm, Circle playerReach, Inventory playerInventory, Items equippedItem) {
+    public void interact(Input input, ChunkManager cm, Circle playerReach, Inventory playerInventory, Items equippedItem, IsoRenderer r) {
         int mouseX = input.getMouseX();
         int mouseY = input.getMouseY();
 
         if (!playerReach.contains(mouseX, mouseY) || !input.isMousePressed(Input.MOUSE_LEFT_BUTTON)) return;
 
-        int[] clickedLoc = cm.getIsoRenderer().screenToIsometric(mouseX, mouseY);
+        int[] clickedLoc = r.screenToIsometric(mouseX, mouseY);
         Chunk chunk = cm.getChunk(clickedLoc[2], clickedLoc[3]);
         if (chunk == null) return;
 
@@ -44,6 +45,7 @@ public class InteractionController {
             } else {
                 handleInteraction(obj, equippedItem);
             }
+            chunk.setDirty(true);
         }
     }
 

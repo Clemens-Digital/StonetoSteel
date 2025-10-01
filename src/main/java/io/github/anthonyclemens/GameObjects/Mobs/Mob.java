@@ -1,6 +1,7 @@
 package io.github.anthonyclemens.GameObjects.Mobs;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -8,9 +9,11 @@ import org.lwjgl.Sys;
 import org.newdawn.slick.Animation;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.geom.Rectangle;
+import org.newdawn.slick.util.Log;
 
 import io.github.anthonyclemens.GameObjects.GameObject;
 import io.github.anthonyclemens.GameObjects.SerializableSupplier;
+import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
 import io.github.anthonyclemens.SharedData;
 import io.github.anthonyclemens.Sound.SoundBox;
@@ -42,7 +45,11 @@ public class Mob extends GameObject {
     protected float intelligence = 0; // Sets the percentage chance that the mob will lock onto the player
 
     // Sway & Movement Styling
-    protected float mobSpeed = 4f;       // Movement speed (pixels per second?)
+    public enum MobState { IDLE, CHASE, ATTACK }
+    private MobState state = MobState.IDLE;
+    protected float distanceToDestination = 0f;
+    protected float mobSpeed = 4f;       // Movement speed
+    protected float currentSpeed = 0f;
     protected float smoothness = 0.15f;  // Easing factor for render interpolation
     protected transient float sway = 0f;        // Sway cycle range (for offset randomness)
     private transient float swayTime = 0f;         // Time accumulator for sine/cos motion
@@ -51,8 +58,11 @@ public class Mob extends GameObject {
     protected long hurtFlashEndTime = 0; // Timestamp when hurt flash should end
     protected long damageCooldown = 1000; // Cooldown time between damage in milliseconds
     protected static final int HURT_FLASH_DURATION_MS = 250; // Duration of red flash in ms
+    private long lastThinkTime = 0;
+    private static final long THINK_INTERVAL_MS = 500;
     protected byte lod = 0;
     private Direction lastDirection = null;
+    protected Biome[] biomes;
 
     public enum Direction {
         UP, DOWN, LEFT, RIGHT
@@ -76,33 +86,71 @@ public class Mob extends GameObject {
 
     public void wander(IsoRenderer r) {
         int tries = 20;
+        int chunkSize = ChunkManager.CHUNK_SIZE;
+
         while (tries-- > 0) {
-            int candidateX = x + rand.nextInt(visionDistance * 2) - visionDistance;
-            int candidateY = y + rand.nextInt(visionDistance * 2) - visionDistance;
+            // Generate a candidate tile within vision range
+            int candidateLocalX = this.x + rand.nextInt(visionDistance * 2 + 1) - visionDistance;
+            int candidateLocalY = this.y + rand.nextInt(visionDistance * 2 + 1) - visionDistance;
 
-            float isoX = r.calculateIsoX(candidateX, candidateY, chunkX, chunkY);
-            float isoY = r.calculateIsoY(candidateX, candidateY, chunkX, chunkY);
-            int[] selectedBlock = r.screenToIsometric(isoX, isoY);
+            // Convert to global tile coordinates
+            int globalTileX = candidateLocalX + this.chunkX * chunkSize;
+            int globalTileY = candidateLocalY + this.chunkY * chunkSize;
 
-            Biome candidateBiome = r.getChunkManager().getBiomeForChunk(selectedBlock[2], selectedBlock[3]);
-            if (candidateBiome == this.biome) {
-                destinationX = candidateX;
-                destinationY = candidateY;
+            // Convert global tile to chunk coordinates
+            int candidateChunkX = globalTileX / chunkSize;
+            int candidateChunkY = globalTileY / chunkSize;
+
+            // Convert global tile to local tile within its chunk
+            int candidateTileX = globalTileX % chunkSize;
+            int candidateTileY = globalTileY % chunkSize;
+
+            // Check biome compatibility
+            Biome candidateBiome = r.getChunkManager().getBiomeForChunk(candidateChunkX, candidateChunkY);
+
+            if (List.of(this.biomes).contains(candidateBiome)) {
+                setDestinationByGlobalPosition(new int[] {
+                    candidateTileX,
+                    candidateTileY,
+                    candidateChunkX,
+                    candidateChunkY
+                });
                 return;
             }
         }
-
-        // Fallback to current position
-        destinationX = x;
-        destinationY = y;
+        setDestinationByGlobalPosition(new int[] {
+            this.x,
+            this.y,
+            this.chunkX,
+            this.chunkY
+        });
     }
 
     private void moveTowardsDestination(int deltaTime, IsoRenderer r) {
+        switch(state){
+            case IDLE -> {
+                this.currentSpeed = this.mobSpeed;
+                if(distanceToDestination < 1f){
+                    wander(r);
+                }
+            }
+            case CHASE -> {
+                this.currentSpeed = this.mobSpeed*1.5f;
+            }
+            default -> {
+            }
+        }
         float dx = destinationX - fx;
         float dy = destinationY - fy;
-        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+        distanceToDestination = (float) Math.sqrt(dx * dx + dy * dy);
 
-        double angle = Math.atan2(dy, dx);
+        float isoDx = dx;
+        float isoDy = dy * 2;
+
+        double rotatedX =  isoDx * Math.cos(-Math.PI/4) - isoDy * Math.sin(-Math.PI/4);
+        double rotatedY =  isoDx * Math.sin(-Math.PI/4) + isoDy * Math.cos(-Math.PI/4);
+
+        double angle = Math.atan2(rotatedY, rotatedX);
 
         if (angle >= -Math.PI / 4 && angle < Math.PI / 4) {
             currentDirection = Direction.RIGHT;
@@ -114,16 +162,11 @@ public class Mob extends GameObject {
             currentDirection = Direction.LEFT;
         }
 
-        if (distance < 2f){
-            wander(r);
-            return;
-        }
+        float dirX = dx / distanceToDestination;
+        float dirY = dy / distanceToDestination;
 
-        float dirX = dx / distance;
-        float dirY = dy / distance;
-
-        fx += dirX * mobSpeed * deltaTime / 1000f;
-        fy += dirY * mobSpeed * deltaTime / 1000f;
+        fx += dirX * currentSpeed * deltaTime / 1000f;
+        fy += dirY * currentSpeed * deltaTime / 1000f;
 
         int tileSize = ChunkManager.CHUNK_SIZE;
 
@@ -134,13 +177,11 @@ public class Mob extends GameObject {
         // Wrap for left/right boundaries
         while (fx < 0) {
             newChunkX -= 1;
-            x += tileSize;
             fx += tileSize;
             destinationX += tileSize;
         }
         while (fx >= tileSize) {
             newChunkX += 1;
-            x -= tileSize;
             fx -= tileSize;
             destinationX -= tileSize;
         }
@@ -148,21 +189,19 @@ public class Mob extends GameObject {
         // Wrap for top/bottom boundaries
         while (fy < 0) {
             newChunkY -= 1;
-            y += tileSize;
             fy += tileSize;
             destinationY += tileSize;
         }
         while (fy >= tileSize) {
             newChunkY += 1;
-            y -= tileSize;
             fy -= tileSize;
             destinationY -= tileSize;
         }
         if(newChunkX != oldChunkX || newChunkY != oldChunkY) {
             // This candidate is out of chunk, calculate move to new chunk
-            chunkX = newChunkX;
-            chunkY = newChunkY;
-            r.getChunkManager().moveGameObjectToChunk(this, oldChunkX, oldChunkY, chunkX, chunkY);
+            this.chunkX = newChunkX;
+            this.chunkY = newChunkY;
+            r.getChunkManager().moveGameObjectToChunk(this, oldChunkX, oldChunkY, this.chunkX, this.chunkY);
         }
     }
 
@@ -181,6 +220,8 @@ public class Mob extends GameObject {
 
         swayTime += deltaTime;
         moveTowardsDestination(deltaTime, r);
+        this.x = (int) fx;
+        this.y = (int) fy;
 
         if (currentAnimation != null) {
             currentAnimation.update(deltaTime);
@@ -203,8 +244,12 @@ public class Mob extends GameObject {
         }
 
         if (Game.showDebug&&this.hitbox!=null&&lodLevel<2) {
-            //r.getGraphics().setColor(Color.red);
-            //r.getGraphics().drawString("Health: "+this.health+"/"+this.maxHealth, renderX, renderY);
+            switch(state){
+                case IDLE -> r.getGraphics().setColor(Color.green);
+                case CHASE -> r.getGraphics().setColor(Color.orange);
+                case ATTACK -> r.getGraphics().setColor(Color.red);
+            }
+            r.getGraphics().drawString(state.name(), renderX, renderY);
             r.getGraphics().setColor((this.peaceful) ? Color.green : Color.red);
             r.getGraphics().draw(hitbox);
 
@@ -269,6 +314,53 @@ public class Mob extends GameObject {
         }
     }
 
+    public void think(long currentTime, Player player) {
+        if (currentTime - lastThinkTime < THINK_INTERVAL_MS) return;
+        lastThinkTime = currentTime;
+
+        updateState(player);
+    }
+
+    private void updateState(Player player) {
+        boolean neuronActivation = rand.nextFloat() <= this.intelligence;
+        if (!neuronActivation) return;
+        int distanceToPlayer = distanceToPlayer(player);
+        if(distanceToPlayer > 2 && distanceToPlayer <= visionDistance){
+            state = MobState.CHASE;
+            setDestinationByGlobalPosition(player.getPlayerLocation());
+        } else if(distanceToPlayer <= 2 && distanceToPlayer > 0){
+            state = MobState.ATTACK;
+            setDestinationByGlobalPosition(player.getPlayerLocation());
+        } else {
+            state = MobState.IDLE;
+        }
+        Log.debug("State: " + state + " distToPlayer: " + distanceToPlayer);
+    }
+
+
+    private int distanceToPlayer(Player player) {
+        int mobWorldX = this.chunkX * ChunkManager.CHUNK_SIZE + this.x;
+        int mobWorldY = this.chunkY * ChunkManager.CHUNK_SIZE + this.y;
+
+        int[] playerPos = player.getPlayerLocation();
+        int playerWorldX = playerPos[2] * ChunkManager.CHUNK_SIZE + playerPos[0];
+        int playerWorldY = playerPos[3] * ChunkManager.CHUNK_SIZE + playerPos[1];
+
+        int destChunkX = (chunkX * ChunkManager.CHUNK_SIZE + destinationX) / ChunkManager.CHUNK_SIZE;
+        int destChunkY = (chunkY * ChunkManager.CHUNK_SIZE + destinationY) / ChunkManager.CHUNK_SIZE;
+
+
+
+        Log.debug("Mob world position: (" + mobWorldX + ", " + mobWorldY + ")");
+        Log.debug("Mob destination: (" + destinationX + ", " + destinationY + ")");
+        Log.debug("Player world position: (" + playerWorldX + ", " + playerWorldY + ")" + " in chunk (" + destChunkX + ", " + destChunkY + ")");
+
+        int dx = playerWorldX - mobWorldX;
+        int dy = playerWorldY - mobWorldY;
+
+        return (int) Math.sqrt(dx * dx + dy * dy);
+    }
+
     public void setDestinationByGlobalPosition(int[] globalLocation) {
         int chunkSize = ChunkManager.CHUNK_SIZE;
 
@@ -281,8 +373,8 @@ public class Mob extends GameObject {
         int deltaX = absoluteTargetX - absoluteCurrentX;
         int deltaY = absoluteTargetY - absoluteCurrentY;
 
-        this.destinationX = this.x + deltaX + this.rand.nextInt(3)-2;
-        this.destinationY = this.y + deltaY + this.rand.nextInt(3)-2;
+        this.destinationX = this.x + deltaX;
+        this.destinationY = this.y + deltaY;
     }
 
     public int getVisionRadius(){

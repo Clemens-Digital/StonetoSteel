@@ -22,7 +22,7 @@ public class Spider extends Mob{
         animationLoaders.put(Direction.DOWN, () -> SpriteManager.getAnimation(spriteSheet, this.animationIndex+1, 0, this.animationIndex+1, 3, 250));
         animationLoaders.put(Direction.LEFT, () -> SpriteManager.getAnimation(spriteSheet, this.animationIndex+2, 0, this.animationIndex+2, 3, 250));
         animationLoaders.put(Direction.RIGHT, () -> SpriteManager.getAnimation(spriteSheet, this.animationIndex+3, 0, this.animationIndex+3, 3, 250));
-        this.biome = Biome.DESERT;
+        this.biomes = new Biome[]{Biome.DESERT, Biome.SWAMP, Biome.RAINFOREST, Biome.FOREST};
         this.droppedItem = new Item(Items.ITEM_STRING,x,y,chunkX,chunkY);
         this.droppedItem.setQuantity(new Random().nextInt(3)+1);
         this.intelligence = 0.8f;
@@ -40,7 +40,6 @@ public class Spider extends Mob{
             int[] currentLoc = r.screenToIsometric(renderX, renderY);
             Chunk thisChunk = r.getChunkManager().getChunk(chunkX, chunkY);
             this.droppedItem.setLocation(currentLoc[0],currentLoc[1],currentLoc[2],currentLoc[3]);
-            this.droppedItem.setID(thisChunk.getGameObjects().size());
             thisChunk.addGameObject(this.droppedItem);
         }
         super.update(r,deltaTime);

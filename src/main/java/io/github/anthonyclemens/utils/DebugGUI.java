@@ -35,26 +35,26 @@ public class DebugGUI {
         String song = (jukeBox != null) ? jukeBox.getCurrentSong() : "N/A";
         String ambient = (ambientSoundBox != null) ? ambientSoundBox.getCurrentSound() : "N/A";
         String playerSound = player.getSound();
-        String playerPos = player.getX() + ", " + player.getY();
+        String playerPos = player.getX()/18 + ", " + player.getY()/18;
         String playerHealth = String.valueOf(player.getHealth());
+        String playerMaxHealth = String.valueOf(player.getMaxHealth());
         String seed = (renderer != null ? String.valueOf(renderer.getChunkManager().getSeed()) : "N/A");
         String paused = (Game.paused) ? "Yes" : "No";
-        String usingFastGraphics = (renderer.isUseFastGraphics()) ? "Yes" : "No";
+        String chunkIsDirty = player.getCurrentChunk().isDirty() ? "Yes" : "No";
 
         String[] debugStrings = new String[] {
             "FPS: " + container.getFPS() + " FPS",
             "Memory Usage: " + getMemUsage(),
-            "Using Fast Graphics: " + usingFastGraphics,
-            "Mouse: " + container.getInput().getMouseX() + ", " + container.getInput().getMouseY(),
             "Tile: " + tile,
             "Chunk: " + chunk,
+            "Chunk isDirty: " + chunkIsDirty,
             "Zoom level: " + Math.round(zoom * 100.0) / 100.0 + "x",
             "Biome: " + biome,
             "Song playing: " + song,
             "Ambient sound playing: " + ambient,
             "Player sound: " + playerSound,
             "Player position: " + playerPos,
-            "Player health: " + playerHealth,
+            "Player health: " + playerHealth + "/" + playerMaxHealth,
             "World Seed: " + seed,
             "Game Paused: " + paused,
         };

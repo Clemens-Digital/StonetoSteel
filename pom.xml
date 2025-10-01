@@ -53,11 +53,6 @@
             <artifactId>steamworks4j-server</artifactId>
             <version>1.9.0</version>
         </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <version>4.2.3.Final</version>
-        </dependency>
     </dependencies>
     <build>
         <plugins>

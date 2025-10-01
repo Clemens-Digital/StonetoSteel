@@ -98,9 +98,7 @@ public class Tree extends SingleTileObject{
         renderX = r.calculateIsoX(x, y, chunkX, chunkY) + offsetX*r.getZoom();
         renderY = r.calculateIsoY(x, y, chunkX, chunkY) + offsetY*r.getZoom();
         r.drawTileIso(tileSheet, i, renderX, renderY);
-        if(Game.showDebug&&this.hitbox!=null){
-            //r.getGraphics().setColor(Color.red);
-           // r.getGraphics().drawString("Health: "+this.health+"/"+this.maxHealth, renderX, renderY);
+        if(Game.showDebug&&this.hitbox!=null&&r.getZoom()>=0.8f){
             r.getGraphics().setColor(Color.black);
             r.getGraphics().draw(hitbox);
         }
@@ -110,7 +108,6 @@ public class Tree extends SingleTileObject{
     public void update(IsoRenderer r, int deltaTime) {
         if(dropItem){
             Chunk thisChunk = r.getChunkManager().getChunk(chunkX, chunkY);
-            this.droppedItem.setID(thisChunk.getGameObjects().size());
             thisChunk.addGameObject(this.droppedItem);
         }
         super.update(r, deltaTime);

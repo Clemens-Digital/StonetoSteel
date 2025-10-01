@@ -18,10 +18,10 @@ import io.github.anthonyclemens.GUI.Banner;
 import io.github.anthonyclemens.GUI.Buttons.ImageTextButton;
 import io.github.anthonyclemens.GameStates;
 import io.github.anthonyclemens.Math.TwoDimensionMath;
+import io.github.anthonyclemens.Rendering.FontManager;
 import io.github.anthonyclemens.Rendering.RenderUtils;
 import io.github.anthonyclemens.Settings;
 import io.github.anthonyclemens.SharedData;
-import io.github.anthonyclemens.Utils;
 import io.github.anthonyclemens.utils.AssetLoader;
 
 public class SettingsMenu extends BasicGameState{
@@ -36,9 +36,9 @@ public class SettingsMenu extends BasicGameState{
 
     //Constants
     private static final String TITLE_STRING = "Options";
-    private static final String MAIN_FONT = "fonts/MedievalTimes.ttf";
-    private static final float MAIN_FONT_SIZE = 48f;
-    private static final float BUTTON_FONT_SIZE = 32f;
+    private static final String MAIN_FONT = "MedievalTimes";
+    private static final int MAIN_FONT_SIZE = 48;
+    private static final int BUTTON_FONT_SIZE = 32;
     private static final int BUTTON_WIDTH = 342;
     private static final int BUTTON_HEIGHT = 114;
 
@@ -57,17 +57,17 @@ public class SettingsMenu extends BasicGameState{
         backgroundImage = new Image(AssetLoader.loadSingleAssetFromFile(texturePack, "backgroundImage"), false, Image.FILTER_NEAREST);
         // Create title banner
         Image bannerImage = new Image(AssetLoader.loadSingleAssetFromFile(texturePack, "bannerImage"), false, Image.FILTER_NEAREST);
-        titleBanner = new Banner(bannerImage, TITLE_STRING, Utils.getFont(MAIN_FONT, MAIN_FONT_SIZE), TwoDimensionMath.getMiddleX(720, container.getWidth()), 10, 720, 251);
+        titleBanner = new Banner(bannerImage, TITLE_STRING, FontManager.getFont(MAIN_FONT, MAIN_FONT_SIZE), TwoDimensionMath.getMiddleX(720, container.getWidth()), 10, 720, 251);
         titleBanner.changeYOffset(120f);
         // Load button images
         Image buttonImage = new Image(AssetLoader.loadSingleAssetFromFile(texturePack, "regularButton"), false, Image.FILTER_NEAREST);
         // Create menu buttons
-        ImageTextButton videoSettings = new ImageTextButton(buttonImage, "Video Settings", Utils.getFont(MAIN_FONT, BUTTON_FONT_SIZE), TwoDimensionMath.getMiddleX(BUTTON_WIDTH, container.getWidth()), 300, BUTTON_WIDTH, BUTTON_HEIGHT);
-        ImageTextButton soundSettings = new ImageTextButton(buttonImage, "Sound Settings", Utils.getFont(MAIN_FONT, BUTTON_FONT_SIZE), TwoDimensionMath.getMiddleX(BUTTON_WIDTH, container.getWidth()), 450, BUTTON_WIDTH, BUTTON_HEIGHT);
-        ImageTextButton controlSettings = new ImageTextButton(buttonImage, "Control Settings", Utils.getFont(MAIN_FONT, BUTTON_FONT_SIZE), TwoDimensionMath.getMiddleX(BUTTON_WIDTH, container.getWidth()), 600, BUTTON_WIDTH, BUTTON_HEIGHT);
+        ImageTextButton videoSettings = new ImageTextButton(buttonImage, "Video Settings", FontManager.getFont(MAIN_FONT, BUTTON_FONT_SIZE), TwoDimensionMath.getMiddleX(BUTTON_WIDTH, container.getWidth()), 300, BUTTON_WIDTH, BUTTON_HEIGHT);
+        ImageTextButton soundSettings = new ImageTextButton(buttonImage, "Sound Settings", FontManager.getFont(MAIN_FONT, BUTTON_FONT_SIZE), TwoDimensionMath.getMiddleX(BUTTON_WIDTH, container.getWidth()), 450, BUTTON_WIDTH, BUTTON_HEIGHT);
+        ImageTextButton controlSettings = new ImageTextButton(buttonImage, "Control Settings", FontManager.getFont(MAIN_FONT, BUTTON_FONT_SIZE), TwoDimensionMath.getMiddleX(BUTTON_WIDTH, container.getWidth()), 600, BUTTON_WIDTH, BUTTON_HEIGHT);
         // Navigation Buttons
-        ImageTextButton backButton = new ImageTextButton(buttonImage, "Back", Utils.getFont(MAIN_FONT, BUTTON_FONT_SIZE), 10, 10, 240, 80);
-        ImageTextButton resetButton = new ImageTextButton(buttonImage, "Reset Settings", Utils.getFont(MAIN_FONT, BUTTON_FONT_SIZE), container.getWidth()-250f, 10, 240, 80);
+        ImageTextButton backButton = new ImageTextButton(buttonImage, "Back", FontManager.getFont(MAIN_FONT, BUTTON_FONT_SIZE), 10, 10, 240, 80);
+        ImageTextButton resetButton = new ImageTextButton(buttonImage, "Reset Settings", FontManager.getFont(MAIN_FONT, BUTTON_FONT_SIZE), container.getWidth()-250f, 10, 240, 80);
         menuButtons.clear();
         menuButtons.addAll(List.of(videoSettings,soundSettings,controlSettings,backButton,resetButton));
     }

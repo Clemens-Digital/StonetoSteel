@@ -6,9 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
+
+import org.lwjgl.Sys;
 
 import io.github.anthonyclemens.GameObjects.GameObject;
 import io.github.anthonyclemens.GameObjects.Mobs.Mob;
+import io.github.anthonyclemens.Logic.DayNightCycle;
 import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
 
@@ -17,6 +21,7 @@ import io.github.anthonyclemens.Rendering.IsoRenderer;
  * Handles tile generation, LOD, and biome blending.
  */
 public class Chunk implements Serializable {
+    private boolean isDirty = false;
     private final int chunkSize;
     private final List<GameObject> gameObjects;
     private final Random rand;
@@ -33,7 +38,7 @@ public class Chunk implements Serializable {
      */
     public Chunk(int chunkSize, Biome biome, int chunkX, int chunkY, int seed,
                  Biome[] neighborBiomes){
-        this.rand = new Random(seed);
+        this.rand = new Random(seed+chunkX*2+chunkY*7);
         this.chunkSize = chunkSize;
         this.tiles = new byte[chunkSize][chunkSize];
         this.gameObjects = new ArrayList<>();
@@ -183,6 +188,7 @@ public class Chunk implements Serializable {
      */
     public void addGameObject(GameObject obj) {
         gameObjects.add(obj);
+        this.isDirty = true;
     }
 
     /**
@@ -196,12 +202,13 @@ public class Chunk implements Serializable {
     /**
      * Removes a GameObject by index.
      */
-    public void removeGameObject(int idx){
-        gameObjects.remove(idx);
-    }
-
-    public void removeGameObject(GameObject obj) {
-        gameObjects.remove(obj);
+    public void removeGameObject(UUID uuid){
+        GameObject toRemove = gameObjects.stream()
+                .filter(gob -> gob.getUUID().equals(uuid))
+                .findFirst()
+                .orElse(null);
+        gameObjects.remove(toRemove);
+        this.isDirty = true;
     }
 
     /**
@@ -211,55 +218,42 @@ public class Chunk implements Serializable {
         return gameObjects;
     }
 
-    public GameObject getGameObject(int idx) {
-        if (idx < 0 || idx >= gameObjects.size()) {
-            return null; // Index out of bounds
-        }
-        return gameObjects.get(idx);
-    }
-
-    public void deleteGameObject(GameObject obj) {
-        gameObjects.remove(obj);
+    public GameObject getGameObject(UUID uuid) {
+        return gameObjects.stream()
+                .filter(gob -> gob.getUUID().equals(uuid))
+                .findFirst()
+                .orElse(null);
     }
 
     /**
      * Renders all GameObjects in this chunk.
      */
     public void render(IsoRenderer r, int lodLevel) {
-        for (GameObject obj : gameObjects) {
-            obj.render(r, lodLevel);
-        }
+        gameObjects.forEach(obj -> obj.render(r,lodLevel));
     }
 
     /**
      * Updates all GameObjects in this chunk.
      */
-    public void update(IsoRenderer r, int deltaTime, Player player) {
-        if(!r.isSunUp()) {
-            GameObject nGob = GameObjectGenerator.generateEnemyForBiome(gameObjects, rand, biome, chunkX, chunkY);
+    public void update(IsoRenderer r, int deltaTime, Player player , DayNightCycle env) {
+        List<GameObject> objectsCopy = new ArrayList<>(gameObjects);
+        //Generate new enemies if it is night, and player is not in the current chunk
+        if(!r.isSunUp() && this!=player.getCurrentChunk()) {
+            GameObject nGob = GameObjectGenerator.generateEnemyForBiome(rand, biome, chunkX, chunkY);
             if(nGob!=null) {
-                nGob.setID(gameObjects.size());
                 nGob.initializeRenderPosition(r);
-                gameObjects.add(nGob);
+                objectsCopy.add(nGob);
             }
         }
-        List<GameObject> objectsCopy = new ArrayList<>(gameObjects);
         for (GameObject obj : objectsCopy) {
-            if (obj instanceof Mob mob && rand.nextFloat() > mob.getIntelligence() && !mob.isPeaceful()) {
-                int[] loc = player.getPlayerLocation();
-
-                int dx = (loc[2] - mob.getCX()) * chunkSize + (loc[0] - mob.getX());
-                int dy = (loc[3] - mob.getCY()) * chunkSize + (loc[1] - mob.getY());
-
-                int maxDistSq = mob.getVisionRadius() * mob.getVisionRadius();
-                if ((dx * dx + dy * dy) <= maxDistSq) {
-                    mob.setDestinationByGlobalPosition(loc);
-                    obj = mob;
-                }
+            if (obj instanceof Mob mob) {
+                mob.think(Sys.getTime(),player);
             }
-            obj.update(r, deltaTime);
-            if(obj.getHealth() == 0 && obj.getHealth() > -1) {
-                deleteGameObject(obj);
+            if (obj != null) {
+                obj.update(r, deltaTime);
+                if (obj.getHealth() == 0 && obj.getHealth() > -1) {
+                    removeGameObject(obj.getUUID());
+                }
             }
         }
     }
@@ -283,7 +277,9 @@ public class Chunk implements Serializable {
      * Generates and adds biome-appropriate GameObjects to this chunk.
      */
     private void generateGameObjects() {
-        this.addGameObjects(GameObjectGenerator.generateObjectsForBiome(this.biome, this.rand, this.chunkX, this.chunkY, this.chunkSize));
+        List<GameObject> generatedGobs = GameObjectGenerator.generateObjectsForBiome(this.biome, this.rand, this.chunkX, this.chunkY, this.chunkSize);
+        gameObjects.addAll(generatedGobs);
+        gameObjects.sort((o1, o2) -> o1.getTileSheetName().compareTo(o2.getTileSheetName()));
     }
 
     /**
@@ -329,5 +325,13 @@ public class Chunk implements Serializable {
 
     public Random getRandom(){
         return this.rand;
+    }
+
+    public boolean isDirty() {
+        return isDirty;
+    }
+
+    public void setDirty(boolean dirty) {
+        isDirty = dirty;
     }
 }

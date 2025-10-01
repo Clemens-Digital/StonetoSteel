@@ -18,9 +18,9 @@ import io.github.anthonyclemens.GUI.Banner;
 import io.github.anthonyclemens.GUI.Buttons.ImageTextButton;
 import io.github.anthonyclemens.GameStates;
 import io.github.anthonyclemens.Math.TwoDimensionMath;
+import io.github.anthonyclemens.Rendering.FontManager;
 import io.github.anthonyclemens.Rendering.RenderUtils;
 import io.github.anthonyclemens.SharedData;
-import io.github.anthonyclemens.Utils;
 
 public class ControlSettings extends BasicGameState{
     private Image backgroundImage;
@@ -28,7 +28,7 @@ public class ControlSettings extends BasicGameState{
     private final List<ImageTextButton> menuButtons = new ArrayList<>();
 
     private static final String TITLE_STRING = "Controls";
-    private static final String MAIN_FONT = "fonts/MedievalTimes.ttf";
+    private static final String MAIN_FONT = "MedievalTimes";
 
     @Override
     public int getID() {
@@ -42,13 +42,13 @@ public class ControlSettings extends BasicGameState{
         // Create title banner
         Image bannerImage = new Image("textures/GUI/TextField/UI_Paper_Banner_01_Downward.png");
         bannerImage.setFilter(Image.FILTER_NEAREST);
-        titleBanner = new Banner(bannerImage, TITLE_STRING, Utils.getFont(MAIN_FONT, 48f), TwoDimensionMath.getMiddleX(720, container.getWidth()), 10, 720, 251);
+        titleBanner = new Banner(bannerImage, TITLE_STRING, FontManager.getFont(MAIN_FONT, 48), TwoDimensionMath.getMiddleX(720, container.getWidth()), 10, 720, 251);
         titleBanner.changeYOffset(120f);
         // Load button images
         Image buttonImage = new Image("textures/GUI/TextField/UI_Paper_Textfield_01.png");
         buttonImage.setFilter(Image.FILTER_NEAREST);
         // Create menu buttons
-        ImageTextButton backButton = new ImageTextButton(buttonImage, "Back", Utils.getFont(MAIN_FONT, 40f), 10, 10, 240, 80);
+        ImageTextButton backButton = new ImageTextButton(buttonImage, "Back", FontManager.getFont(MAIN_FONT, 40), 10, 10, 240, 80);
         menuButtons.clear();
         menuButtons.addAll(List.of(backButton));
     }

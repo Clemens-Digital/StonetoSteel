@@ -1,5 +1,6 @@
 package io.github.anthonyclemens.GameObjects.Mobs;
 
+import java.util.List;
 import java.util.Random;
 
 import io.github.anthonyclemens.GameObjects.SingleTileObjects.Item;
@@ -23,7 +24,7 @@ public class Fish extends Mob{
         animationLoaders.put(Direction.RIGHT, () -> SpriteManager.getAnimation(spriteSheet, this.animationIndex, 0, this.animationIndex, 0, 100));
         this.droppedItem = new Item(spriteSheet, "ITEM_FISH", this.animationIndex, x, y, chunkX, chunkY);
         this.droppedItem.setQuantity(1);
-        this.biome = Biome.WATER;
+        this.biomes = new Biome[]{Biome.WATER};
         this.mobSpeed=1f;
         this.smoothness=0.02f;
         this.setSway(1000f);
@@ -37,11 +38,10 @@ public class Fish extends Mob{
             int[] currentLoc = r.screenToIsometric(renderX, renderY);
             Chunk thisChunk = r.getChunkManager().getChunk(chunkX, chunkY);
             this.droppedItem.setLocation(currentLoc[0],currentLoc[1],currentLoc[2],currentLoc[3]);
-            this.droppedItem.setID(thisChunk.getGameObjects().size());
             thisChunk.addGameObject(this.droppedItem);
         }
         super.update(r,deltaTime);
-        if(r.getChunkManager().getBiomeForChunk(chunkX,chunkY)!=this.biome) this.removeHealth(1);
+        if(!List.of(this.biomes).contains(r.getChunkManager().getBiomeForChunk(chunkX,chunkY))) this.removeHealth(1);
     }
 
     @Override

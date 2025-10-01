@@ -140,6 +140,10 @@ public class DayNightCycle implements Serializable {
         this.sunsetTime = sunsetTime;
     }
 
+    public float getTime(){
+        return this.timeOfDay;
+    }
+
     /**
      * Returns a string representation of the current time in 12-hour format.
      */

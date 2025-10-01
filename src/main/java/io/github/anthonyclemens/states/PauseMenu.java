@@ -19,17 +19,17 @@ import io.github.anthonyclemens.GUI.Banner;
 import io.github.anthonyclemens.GUI.Buttons.ImageTextButton;
 import io.github.anthonyclemens.GameStates;
 import io.github.anthonyclemens.Math.TwoDimensionMath;
+import io.github.anthonyclemens.Rendering.FontManager;
 import io.github.anthonyclemens.SharedData;
-import io.github.anthonyclemens.Utils;
 import io.github.anthonyclemens.utils.SaveLoadManager;
 
 public class PauseMenu extends BasicGameState {
-    private ImageTextButton saveButton, loadButton, videoButton, soundButton, controlButton, exitButton, resumeButton;
     private final List<ImageTextButton> menuButtons = new ArrayList<>();
     private Banner titleBanner;
     private static final String TITLE_STRING = "Paused";
-    private static final String MAIN_FONT = "fonts/MedievalTimes.ttf";
-    private Image buttonImage, bannerImage;
+    private static final String MAIN_FONT = "MedievalTimes";
+    private Image buttonImage;
+    private Image bannerImage;
     private SaveLoadManager saveLoadManager = new SaveLoadManager();
 
     @Override
@@ -42,19 +42,20 @@ public class PauseMenu extends BasicGameState {
         // Load images and fonts
         buttonImage = new Image("textures/GUI/TextField/UI_Paper_Textfield_01.png", false, Image.FILTER_NEAREST);
         bannerImage = new Image("textures/GUI/TextField/UI_Paper_Banner_01_Downward.png", false, Image.FILTER_NEAREST);
-        titleBanner = new Banner(bannerImage, TITLE_STRING, Utils.getFont(MAIN_FONT, 48f), TwoDimensionMath.getMiddleX(720, container.getWidth()), 10, 720, 251);
+        titleBanner = new Banner(bannerImage, TITLE_STRING, FontManager.getFont(MAIN_FONT, 48), TwoDimensionMath.getMiddleX(720, container.getWidth()), 10, 720, 251);
         titleBanner.changeYOffset(120f);
 
         // Create buttons
         float midX = (int) TwoDimensionMath.getMiddleX(342, container.getWidth());
-        int y = 250, step = 70;
-        saveButton = new ImageTextButton(buttonImage, "Save", Utils.getFont(MAIN_FONT, 32f), midX, y, 342, 60); y += step;
-        loadButton = new ImageTextButton(buttonImage, "Load", Utils.getFont(MAIN_FONT, 32f), midX, y, 342, 60); y += step;
-        videoButton = new ImageTextButton(buttonImage, "Video Settings", Utils.getFont(MAIN_FONT, 32f), midX, y, 342, 60); y += step;
-        soundButton = new ImageTextButton(buttonImage, "Sound Settings", Utils.getFont(MAIN_FONT, 32f), midX, y, 342, 60); y += step;
-        controlButton = new ImageTextButton(buttonImage, "Control Settings", Utils.getFont(MAIN_FONT, 32f), midX, y, 342, 60); y += step;
-        exitButton = new ImageTextButton(buttonImage, "Save and Exit", Utils.getFont(MAIN_FONT, 32f), midX, y, 342, 60);
-        resumeButton = new ImageTextButton(buttonImage, "Resume", Utils.getFont(MAIN_FONT, 40f), 10, 10, 240, 80);
+        int y = 250;
+        int step = 70;
+        ImageTextButton saveButton = new ImageTextButton(buttonImage, "Save", FontManager.getFont(MAIN_FONT, 32), midX, y, 342, 60); y += step;
+        ImageTextButton loadButton = new ImageTextButton(buttonImage, "Load", FontManager.getFont(MAIN_FONT, 32), midX, y, 342, 60); y += step;
+        ImageTextButton videoButton = new ImageTextButton(buttonImage, "Video Settings", FontManager.getFont(MAIN_FONT, 32), midX, y, 342, 60); y += step;
+        ImageTextButton soundButton = new ImageTextButton(buttonImage, "Sound Settings", FontManager.getFont(MAIN_FONT, 32), midX, y, 342, 60); y += step;
+        ImageTextButton controlButton = new ImageTextButton(buttonImage, "Control Settings", FontManager.getFont(MAIN_FONT, 32), midX, y, 342, 60); y += step;
+        ImageTextButton exitButton = new ImageTextButton(buttonImage, "Save and Exit", FontManager.getFont(MAIN_FONT, 32), midX, y, 342, 60);
+        ImageTextButton resumeButton = new ImageTextButton(buttonImage, "Resume", FontManager.getFont(MAIN_FONT, 40), 10, 10, 240, 80);
 
         menuButtons.clear();
         menuButtons.addAll(List.of(saveButton, loadButton, videoButton, soundButton, controlButton, exitButton, resumeButton));
@@ -74,9 +75,7 @@ public class PauseMenu extends BasicGameState {
         g.fillRect(0, 0, container.getWidth(), container.getHeight());
         // Draw menu
         titleBanner.render(g);
-        for (ImageTextButton itb : menuButtons) {
-            itb.render(g);
-        }
+        menuButtons.forEach(itb -> itb.render(g));
     }
 
     @Override

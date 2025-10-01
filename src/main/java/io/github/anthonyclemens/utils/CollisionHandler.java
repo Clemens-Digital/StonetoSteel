@@ -47,7 +47,7 @@ public class CollisionHandler {
                     if (gob.getName().startsWith("ITEM_")) {
                         Items itemType = Items.valueOf(gob.getName());
                         if(player.getPlayerInventory().addItem(itemType, ((Item) gob).getQuantity())){
-                            currentChunk.removeGameObject(gob.getID()-1);
+                            currentChunk.removeGameObject(gob.getUUID());
                         }
                         return;
                     }

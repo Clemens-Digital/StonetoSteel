@@ -33,29 +33,30 @@ public class Item extends SingleTileObject{
 
     @Override
     public void render(IsoRenderer r, int deltaTime) {
-        float zoom = r.getZoom();
-        float baseX = r.calculateIsoX(x, y, chunkX, chunkY);
-        float baseY = r.calculateIsoY(x, y, chunkX, chunkY);
-        float shadowY = baseY + (tileHeight + SHADOW_OFFSET_Y) * zoom;
-        float shadowX = baseX + tileWidth * zoom / 2f;
-        float bobOffset = offsetY * (float) Math.sin(hoverTime * hoverSpeed * 2 * Math.PI);
-        float scaleFactor = 1f + ((bobOffset / offsetY) * 0.3f);
-        float shadowRadius = (tileWidth * zoom / 2f) * scaleFactor;
+        if(r.getZoom()>=0.8f){
+            float zoom = r.getZoom();
+            float baseX = r.calculateIsoX(x, y, chunkX, chunkY);
+            float baseY = r.calculateIsoY(x, y, chunkX, chunkY);
+            float shadowY = baseY + (tileHeight + SHADOW_OFFSET_Y) * zoom;
+            float shadowX = baseX + tileWidth * zoom / 2f;
+            float bobOffset = offsetY * (float) Math.sin(hoverTime * hoverSpeed * 2 * Math.PI);
+            float scaleFactor = 1f + ((bobOffset / offsetY) * 0.3f);
+            float shadowRadius = (tileWidth * zoom / 2f) * scaleFactor;
 
-        // Draw shadow centered under the item
-        r.getGraphics().setColor(shadowColor);
-        r.getGraphics().fillOval(
-            shadowX - shadowRadius / 2f,
-            shadowY,
-            shadowRadius,
-            shadowRadius / 2f
-        );
-        r.drawTileIso(tileSheet, i, renderX, renderY);
-
-        if (Game.showDebug&&this.hitbox!=null) {
-            r.getGraphics().setColor(Color.black);
-            r.getGraphics().draw(hitbox);
+            // Draw shadow centered under the item
+            r.getGraphics().setColor(shadowColor);
+            r.getGraphics().fillOval(
+                shadowX - shadowRadius / 2f,
+                shadowY,
+                shadowRadius,
+                shadowRadius / 2f
+            );
+            if (Game.showDebug&&this.hitbox!=null) {
+                r.getGraphics().setColor(Color.black);
+                r.getGraphics().draw(hitbox);
+            }
         }
+        r.drawTileIso(tileSheet, i, renderX, renderY);
     }
 
     @Override

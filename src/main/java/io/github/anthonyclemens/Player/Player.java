@@ -14,6 +14,7 @@ import org.newdawn.slick.util.Log;
 
 import io.github.anthonyclemens.GameObjects.SingleTileObjects.Item;
 import io.github.anthonyclemens.GameObjects.SingleTileObjects.Items;
+import io.github.anthonyclemens.Rendering.IsoRenderer;
 import io.github.anthonyclemens.Rendering.SpriteManager;
 import io.github.anthonyclemens.Settings;
 import io.github.anthonyclemens.Sound.SoundBox;
@@ -48,6 +49,7 @@ public class Player {
     private int[] playerLoc; // Player location in the world [x, y, chunkX, chunkY]
     private final InteractionController interactor;
     private Items equippedItem;
+    private transient IsoRenderer renderer;
 
     // Player health properties
     private byte health; // Player health
@@ -190,8 +192,9 @@ public class Player {
         return (dir == -1) ? 0 : dir;
     }
 
-    public void render(GameContainer container, float zoom, float cameraX, float cameraY) {
-        if(animations == null || idleAnimations == null) return;
+    public void render(GameContainer container, float zoom, float cameraX, float cameraY, IsoRenderer r) {
+        if(animations == null || idleAnimations == null || r == null) return;
+        renderer = r;
         renderX = (x - cameraX) * zoom + container.getWidth() / 2f;
         renderY = (y - cameraY) * zoom + container.getHeight() / 2f;
         boolean flashRed = System.currentTimeMillis() < hurtFlashEndTime;
@@ -415,7 +418,7 @@ public class Player {
     }
 
     public void interact(Input input, ChunkManager cm){
-        interactor.interact(input, cm, playerReach, playerInventory, equippedItem);
+        interactor.interact(input, cm, playerReach, playerInventory, equippedItem, renderer);
     }
 
     private void loadAnimations(){
@@ -456,5 +459,9 @@ public class Player {
 
     public InteractionController getInteractor(){
         return this.interactor;
+    }
+
+    public Chunk getCurrentChunk() {
+        return this.currentChunk;
     }
 }

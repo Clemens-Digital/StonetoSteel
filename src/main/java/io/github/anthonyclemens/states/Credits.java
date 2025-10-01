@@ -20,9 +20,9 @@ import com.codedisaster.steamworks.SteamAPI;
 
 import io.github.anthonyclemens.GUI.Buttons.ImageTextButton;
 import io.github.anthonyclemens.GameStates;
+import io.github.anthonyclemens.Rendering.FontManager;
 import io.github.anthonyclemens.Rendering.RenderUtils;
 import io.github.anthonyclemens.Settings;
-import io.github.anthonyclemens.Utils;
 import io.github.anthonyclemens.utils.AssetLoader;
 
 public class Credits extends BasicGameState{
@@ -38,9 +38,9 @@ public class Credits extends BasicGameState{
     private static final float SCROLL_SPEED = 50f;
 
 
-    private static final String MAIN_FONT = "fonts/MedievalTimes.ttf";
-    private static final String CREDITS_FONT = "fonts/Roboto-Black.ttf";
-    private static final float CREDITS_FONT_SIZE = 32f;
+    private static final String MAIN_FONT = "MedievalTimes";
+    private static final String CREDITS_FONT = "Roboto";
+    private static final int CREDITS_FONT_SIZE = 32;
 
     private List<String> allCredits;
     Map<String, List<String>> creditSections = new LinkedHashMap<>();
@@ -59,7 +59,7 @@ public class Credits extends BasicGameState{
         String soundPack = settings.getSoundPack();
         // Load button images
         Image buttonImage = new Image(AssetLoader.loadSingleAssetFromFile(texturePack, "regularButton"), false, Image.FILTER_NEAREST);
-        backButton = new ImageTextButton(buttonImage, "Back", Utils.getFont(MAIN_FONT, 32f), 10, 10, 240, 80);
+        backButton = new ImageTextButton(buttonImage, "Back", FontManager.getFont(MAIN_FONT, 32), 10, 10, 240, 80);
 
         // Load Background Image
         bgImage = new Image(AssetLoader.loadSingleAssetFromFile(texturePack, "backgroundImage"));
@@ -120,7 +120,7 @@ public class Credits extends BasicGameState{
             allCredits.add("");
         });
         gingerImage = new Image("GingertheCat.jpg", false, Image.FILTER_NEAREST);
-        creditsFont = Utils.getFont(CREDITS_FONT, CREDITS_FONT_SIZE);
+        creditsFont = FontManager.getFont(CREDITS_FONT, CREDITS_FONT_SIZE);
         gingerX = (container.getWidth() - gingerImage.getWidth()) / 2f;
     }
 

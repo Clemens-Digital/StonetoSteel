@@ -9,13 +9,12 @@ import org.newdawn.slick.util.Log;
 import com.codedisaster.steamworks.SteamAPI;
 import com.codedisaster.steamworks.SteamException;
 
+import io.github.anthonyclemens.Rendering.FontManager;
 import io.github.anthonyclemens.states.ControlSettings;
 import io.github.anthonyclemens.states.Credits;
 import io.github.anthonyclemens.states.Game;
 import io.github.anthonyclemens.states.LoadingScreen;
 import io.github.anthonyclemens.states.MainMenu;
-import io.github.anthonyclemens.states.Multiplayer;
-import io.github.anthonyclemens.states.MultiplayerMenu;
 import io.github.anthonyclemens.states.NewGame;
 import io.github.anthonyclemens.states.PauseMenu;
 import io.github.anthonyclemens.states.SettingsMenu;
@@ -31,10 +30,6 @@ public class Main extends StateBasedGame{
         super("Stone to Steel");
     }
     public static void main(String[] args){
-        if (args.length > 0 && args[0].contains("-server")) {
-            System.out.println("Server Mode Entered");
-            return;
-        }
         Settings settings = Settings.getInstance();
         try {
             SteamAPI.loadLibraries("./libraries");
@@ -51,6 +46,7 @@ public class Main extends StateBasedGame{
             //Initialize the Slick2d engine
             app = new AppGameContainer(new Main());
             setSettings(settings);
+            addFonts();
             //app.setIcon("");
             app.start();
         } catch (SlickException e){
@@ -88,8 +84,6 @@ public class Main extends StateBasedGame{
         addState(new PauseMenu());
         addState(new LoadingScreen());
         addState(new Credits());
-        addState(new MultiplayerMenu());
-        addState(new Multiplayer());
     }
 
     public static void setSettings(Settings settings) throws SlickException{
@@ -99,6 +93,11 @@ public class Main extends StateBasedGame{
 		app.setShowFPS(false);
 		app.setMaximumLogicUpdateInterval(60);
 		app.setTargetFrameRate(settings.getMaxFPS());
+    }
+
+    private static void addFonts(){
+        FontManager.addFont("MedievalTimes", "fonts/MedievalTimes.ttf");
+        FontManager.addFont("Roboto", "fonts/Roboto-Black.ttf");
     }
 
 }

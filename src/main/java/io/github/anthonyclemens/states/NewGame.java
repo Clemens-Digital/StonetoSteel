@@ -18,9 +18,9 @@ import io.github.anthonyclemens.GUI.Banner;
 import io.github.anthonyclemens.GUI.Buttons.ImageTextButton;
 import io.github.anthonyclemens.GameStates;
 import io.github.anthonyclemens.Math.TwoDimensionMath;
+import io.github.anthonyclemens.Rendering.FontManager;
 import io.github.anthonyclemens.Rendering.RenderUtils;
 import io.github.anthonyclemens.SharedData;
-import io.github.anthonyclemens.Utils;
 import io.github.anthonyclemens.utils.SaveLoadManager;
 
 public class NewGame extends BasicGameState {
@@ -35,7 +35,7 @@ public class NewGame extends BasicGameState {
     private boolean delete = false;
 
     // Constants
-    private static final String MAIN_FONT = "fonts/MedievalTimes.ttf";
+    private static final String MAIN_FONT = "MedievalTimes";
     private static final String TITLE_STRING = "World Selection";
     private static final String EMPTY = "- empty -";
     private static final String[] SAVES = {
@@ -61,7 +61,7 @@ public class NewGame extends BasicGameState {
         titleBanner = new Banner(
             bannerImage,
             TITLE_STRING,
-            Utils.getFont(MAIN_FONT, 48f),
+            FontManager.getFont(MAIN_FONT, 48),
             TwoDimensionMath.getMiddleX(720, container.getWidth()),
             10,
             720,
@@ -73,22 +73,22 @@ public class NewGame extends BasicGameState {
 
         // Create menu buttons
         backButton = new ImageTextButton(
-            buttonImage, "Back", Utils.getFont(MAIN_FONT, 40f),
+            buttonImage, "Back", FontManager.getFont(MAIN_FONT, 40),
             10, 10, 240, 80
         );
         cancelButton = new ImageTextButton(
-            buttonImage, "Cancel", Utils.getFont(MAIN_FONT, 40f),
+            buttonImage, "Cancel", FontManager.getFont(MAIN_FONT, 40),
             10, 10, 240, 80
         );
         cancelButton.setRender(false);
         deleteWorldButton = new ImageTextButton(
-            buttonImage, "Delete World", Utils.getFont(MAIN_FONT, 32f),
+            buttonImage, "Delete World", FontManager.getFont(MAIN_FONT, 32),
             TwoDimensionMath.getMiddleX(342, container.getWidth()), container.getHeight()-120f, 342, 60
         );
         ImageTextButton[] slots = new ImageTextButton[5];
         for (int i = 0; i < slots.length; i++) {
             slots[i] = new ImageTextButton(
-            buttonImage, "", Utils.getFont(MAIN_FONT, 32f),
+            buttonImage, "", FontManager.getFont(MAIN_FONT, 32),
             TwoDimensionMath.getMiddleX(342, container.getWidth()), 220 + i * 80, 342, 60
             );
             slots[i].setName("Slot" + (i + 1));

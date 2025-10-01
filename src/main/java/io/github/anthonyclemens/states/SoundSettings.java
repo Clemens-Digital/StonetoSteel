@@ -21,10 +21,10 @@ import io.github.anthonyclemens.GUI.Buttons.ImageTextButton;
 import io.github.anthonyclemens.GUI.Slider;
 import io.github.anthonyclemens.GameStates;
 import io.github.anthonyclemens.Math.TwoDimensionMath;
+import io.github.anthonyclemens.Rendering.FontManager;
 import io.github.anthonyclemens.Rendering.RenderUtils;
 import io.github.anthonyclemens.Settings;
 import io.github.anthonyclemens.SharedData;
-import io.github.anthonyclemens.Utils;
 
 public class SoundSettings extends BasicGameState{
     private Image backgroundImage;
@@ -34,7 +34,7 @@ public class SoundSettings extends BasicGameState{
     private final List<Banner> banners = new ArrayList<>();
 
     private static final String TITLE_STRING = "Sound Settings";
-    private static final String MAIN_FONT = "fonts/MedievalTimes.ttf";
+    private static final String MAIN_FONT = "MedievalTimes";
     private static final int SLIDER_WIDTH = 280;
     private static final int SLIDER_X_OFFSET = 138;
     private static final int BANNER_LABEL_OFFSET = 36;
@@ -52,17 +52,17 @@ public class SoundSettings extends BasicGameState{
         backgroundImage = new Image("textures/Background.png");
         // Create title banner
         Image bannerImage = new Image("textures/GUI/TextField/UI_Paper_Banner_01_Downward.png", false, Image.FILTER_NEAREST);
-        titleBanner = new Banner(bannerImage, TITLE_STRING, Utils.getFont(MAIN_FONT, 48f), TwoDimensionMath.getMiddleX(720, container.getWidth()), 10, 720, 251);
+        titleBanner = new Banner(bannerImage, TITLE_STRING, FontManager.getFont(MAIN_FONT, 48), TwoDimensionMath.getMiddleX(720, container.getWidth()), 10, 720, 251);
         titleBanner.changeYOffset(120f);
         // Load button images
         Image buttonImage = new Image("textures/GUI/TextField/UI_Paper_Textfield_01.png", false, Image.FILTER_NEAREST);
         // Create menu buttons
-        ImageTextButton backButton = new ImageTextButton(buttonImage, "Back", Utils.getFont(MAIN_FONT, 40f), 10, 10, 240, 80);
-        ImageTextButton applyButton = new ImageTextButton(buttonImage, "Apply", Utils.getFont(MAIN_FONT, 24f), TwoDimensionMath.getMiddleX(180, container.getWidth()), 564, 180, 64);
+        ImageTextButton backButton = new ImageTextButton(buttonImage, "Back", FontManager.getFont(MAIN_FONT, 40), 10, 10, 240, 80);
+        ImageTextButton applyButton = new ImageTextButton(buttonImage, "Apply", FontManager.getFont(MAIN_FONT, 24), TwoDimensionMath.getMiddleX(180, container.getWidth()), 564, 180, 64);
         //Create Sliders and their Banners
         Image sliderNub = new Image("textures/GUI/Slider/UI_Paper_Scroll_Bar.png", false, Image.FILTER_NEAREST);
         Image sliderBanner = new Image("textures/GUI/TextField/UI_Paper_Button_Large_Lock_02a1.png", false, Image.FILTER_NEAREST);
-        TrueTypeFont sliderFont = Utils.getFont(MAIN_FONT, 26f);
+        TrueTypeFont sliderFont = FontManager.getFont(MAIN_FONT, 26);
         //Left side
         Banner mainBanner = createBanner("Main", sliderFont, sliderBanner, (int)TwoDimensionMath.getMiddleX(520, container.getWidth()) - 260, 240, 520, SLIDER_BANNER_HEIGHT, BANNER_LABEL_OFFSET);
         Slider mainSlider = createSlider(sliderNub, Color.black, sliderFont, mainBanner.getX() + SLIDER_X_OFFSET, mainBanner.getY() + mainBanner.getHeight() / 2 - 5, SLIDER_WIDTH, settings.getMainVolume());

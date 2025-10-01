@@ -6,11 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.lwjgl.Sys;
 import org.newdawn.slick.Music;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.util.Log;
-
-import io.github.anthonyclemens.SharedData;
 
 /**
  * JukeBox manages categorized music tracks, allowing random playback and resource cleanup.
@@ -24,14 +23,9 @@ public class JukeBox {
     private final Random random;
     private float volume;
 
-    public JukeBox(Builder builder) {
-        this.songs = builder.songs;
-        this.random = new Random(SharedData.getSeed());
-    }
-
     public JukeBox() {
         this.songs = new HashMap<>();
-        this.random = new Random(SharedData.getSeed());
+        this.random = new Random(Sys.getTime());
     }
 
     /**
@@ -188,40 +182,6 @@ public class JukeBox {
             category.clear();
         }
         songs.clear();
-    }
-
-    /**
-     * Builder class for constructing a JukeBox with preloaded songs.
-     */
-    public static class Builder {
-        private HashMap<String, HashMap<String, Music>> songs;
-
-        public Builder() {
-            this.songs = new HashMap<>();
-        }
-
-        public Builder addSong(String category, String path) throws SlickException {
-            this.songs.computeIfAbsent(category, k -> new HashMap<>()).put(path, new Music(path, true));
-            return this;
-        }
-
-        public Builder addSongs(String category, List<String> paths) {
-            paths.forEach(path -> {
-                try {
-                    this.songs
-                        .computeIfAbsent(category, k -> new HashMap<>())
-                        .put(path, new Music(path, true));
-                    Log.debug("Loading song (" + category + "," + path + ")");
-                } catch (SlickException e) {
-                    Log.error(e);
-                }
-            });
-            return this;
-        }
-
-        public JukeBox build() {
-            return new JukeBox(this);
-        }
     }
 }
 

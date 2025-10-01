@@ -1,15 +1,16 @@
 package io.github.anthonyclemens.Rendering;
 
+import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SpriteSheet;
 import org.newdawn.slick.util.Log;
 
+import io.github.anthonyclemens.Logic.DayNightCycle;
 import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.WorldGen.Chunk;
 import io.github.anthonyclemens.WorldGen.ChunkManager;
-import io.github.anthonyclemens.utils.Profiler;
 
 /**
  * The IsoRenderer class is responsible for rendering isometric tiles and chunks
@@ -33,8 +34,6 @@ public class IsoRenderer {
     private boolean cameraMoving = false;
     private boolean isSunUp = true;
     private final FastGraphics fastGraphics = new FastGraphics();
-    private boolean useFastGraphics = true;
-    private final Profiler profiler = new Profiler();
 
     public IsoRenderer(float zoom, String worldTileSheet, ChunkManager chunkManager, GameContainer container){
         this.zoom = zoom;
@@ -84,7 +83,6 @@ public class IsoRenderer {
     }
 
     public void render() {
-        profiler.begin();
         if (this.visibleChunks == null) return;
 
         int lodLevel = getLODLevel();
@@ -97,7 +95,6 @@ public class IsoRenderer {
             }
         }
         worldTileSheet.endUse();
-        profiler.tick("Render Chunk Tiles");
 
         // Second pass: chunk objects
         for (int x = visibleChunks[0]; x <= visibleChunks[2]; x++) {
@@ -106,11 +103,10 @@ public class IsoRenderer {
                 if (c != null) c.render(this, lodLevel);
             }
         }
-        profiler.tick("Render Chunk Objects");
     }
 
 
-    public void updateChunksAroundPlayer(int deltaTime, Player player) {
+    public void updateChunksAroundPlayer(int deltaTime, Player player, DayNightCycle env) {
         if(player.getPlayerLocation()==null) return;
         int playerChunkX = player.getPlayerLocation()[2];
         int playerChunkY = player.getPlayerLocation()[3];
@@ -119,7 +115,7 @@ public class IsoRenderer {
             for (int y = playerChunkY - renderDistance; y <= playerChunkY + renderDistance; y++) {
                 Chunk chunk = chunkManager.getChunk(x, y);
                 if (chunk != null) {
-                    chunk.update(this, deltaTime, player);
+                    chunk.update(this, deltaTime, player, env);
                 }
             }
         }
@@ -272,6 +268,11 @@ public class IsoRenderer {
         i.draw(screenX, screenY, this.zoom);
     }
 
+    public void drawString(String text, String font, int fontSize, float xReal, float yReal, Color color){
+        this.getGraphics().setColor(color);
+        FontManager.getFont(font, fontSize).drawString(xReal, yReal, text);
+    }
+
     //Getters
 
     public boolean isCameraMoving() {
@@ -279,7 +280,7 @@ public class IsoRenderer {
     }
 
     public Graphics getGraphics(){
-        return (useFastGraphics) ? this.fastGraphics : this.container.getGraphics();
+        return this.fastGraphics;
     }
 
     public float getZoom(){
@@ -301,14 +302,6 @@ public class IsoRenderer {
         return this.isSunUp;
     }
 
-    public boolean isUseFastGraphics() {
-        return this.useFastGraphics;
-    }
-
-    public Profiler getProfiler(){
-        return this.profiler;
-    }
-
     //Setters
 
 
@@ -318,9 +311,5 @@ public class IsoRenderer {
 
     public static void setRenderDistance(int nrd) {
         IsoRenderer.renderDistance = nrd;
-    }
-
-    public void setUseFastGraphics(boolean useFastGraphics){
-        this.useFastGraphics = useFastGraphics;
     }
 }

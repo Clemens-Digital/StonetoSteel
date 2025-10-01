@@ -10,7 +10,6 @@ public enum GameStates {
     CREDITS(3),
     MULTIPLAYER_MENU(4),
     GAME(99),
-    MULTIPLAYER(100),
     VIDEO_SETTINGS(10),
     SOUND_SETTINGS(11),
     CONTROL_SETTINGS(12),

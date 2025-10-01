@@ -4,9 +4,9 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.newdawn.slick.SlickException;
 
 import io.github.anthonyclemens.Player.Player;
+import io.github.anthonyclemens.Rendering.FastGraphics;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
 import io.github.anthonyclemens.WorldGen.ChunkManager;
 
@@ -18,7 +18,8 @@ public class SaveLoadManagerTest {
     Player postLoadPlayer;
 
     @Before
-    public void setup() throws SlickException{
+    public void setup(){
+        FastGraphics.setTestMode(true);
         saveLoadManager = new SaveLoadManager();
         ChunkManager chunkManager = new ChunkManager(123456);
         preSaveRenderer = new IsoRenderer(123, null, chunkManager, null);

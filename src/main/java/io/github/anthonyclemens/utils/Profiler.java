@@ -4,15 +4,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Profiler {
-    private Map<String, Long> timeMap = new LinkedHashMap<>();
+    private final Map<String, Long> timeMap = new LinkedHashMap<>();
     private long lastTick = 0;
+    private final Map<String, long[]> history = new LinkedHashMap<>();
+    private static final int SAMPLE_SIZE = 60;
 
     public void begin() {
         lastTick = System.nanoTime();
     }
-
-    private Map<String, long[]> history = new LinkedHashMap<>();
-    private static final int SAMPLE_SIZE = 20;
 
     public void tick(String label) {
         long now = System.nanoTime();
@@ -46,5 +45,9 @@ public class Profiler {
 
     public void clear() {
         timeMap.clear();
+    }
+
+    public Map<String, long[]> getHistory() {
+        return history;
     }
 }

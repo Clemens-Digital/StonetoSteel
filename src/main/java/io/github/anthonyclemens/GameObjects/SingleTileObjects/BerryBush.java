@@ -36,7 +36,7 @@ public class BerryBush extends SingleTileObject{
         renderX = r.calculateIsoX(x, y, chunkX, chunkY) + offsetX;
         renderY = r.calculateIsoY(x, y, chunkX, chunkY) + offsetY;
         r.drawTileIso(tileSheet, i, renderX, renderY);
-        if(Game.showDebug&&this.hitbox!=null){
+        if(Game.showDebug&&this.hitbox!=null&&r.getZoom()>=0.8f){
             r.getGraphics().setColor(Color.black);
             r.getGraphics().draw(hitbox);
         }
@@ -46,7 +46,6 @@ public class BerryBush extends SingleTileObject{
     public void update(IsoRenderer r, int deltaTime) {
         if(dropItem){
             Chunk thisChunk = r.getChunkManager().getChunk(chunkX, chunkY);
-            this.droppedItem.setID(thisChunk.getGameObjects().size());
             thisChunk.addGameObject(this.droppedItem);
         }
         super.update(r, deltaTime);

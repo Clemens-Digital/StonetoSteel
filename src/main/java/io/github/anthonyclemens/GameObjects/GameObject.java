@@ -1,6 +1,7 @@
 package io.github.anthonyclemens.GameObjects;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 import org.newdawn.slick.geom.Rectangle;
 
@@ -18,7 +19,7 @@ public abstract class GameObject implements Serializable{
     protected transient float renderY;
     protected boolean peaceful = true;
     protected String name;
-    protected int id;
+    protected UUID uuid;
     protected transient Rectangle hitbox;
     protected String tileSheet;
     protected Biome biome;
@@ -35,6 +36,8 @@ public abstract class GameObject implements Serializable{
         this.name=objName;
         this.tileSheet = tileSheet;
         this.hitbox = new Rectangle(0,0,0,0);
+        // generate unique identifier for this object
+        this.uuid = UUID.randomUUID();
     }
 
     public int getX() {
@@ -97,12 +100,11 @@ public abstract class GameObject implements Serializable{
         return this.biome;
     }
 
-    public void setID(int nid){
-        this.id=nid;
-    }
-
-    public int getID(){
-        return this.id;
+    /**
+     * Get the UUID identifier for this GameObject.
+     */
+    public UUID getUUID() {
+        return this.uuid;
     }
 
     public boolean isSolid(){

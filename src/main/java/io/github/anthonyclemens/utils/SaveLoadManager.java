@@ -76,6 +76,7 @@ public class SaveLoadManager {
 
         Map<String, List<Chunk>> groupedChunks = new HashMap<>();
         for (Chunk chunk : chunkManager.getChunks().values()) {
+            if (!chunk.isDirty()) continue;
             int cx = chunk.getChunkX();
             int cy = chunk.getChunkY();
             String regionKey = (cx / 32) + "_" + (cy / 32);
@@ -139,13 +140,12 @@ public class SaveLoadManager {
 
             int seed = (int) seedIn.readObject();
 
-            // Load chunks from grouped regions
+            // Load chunks from dirty regions
             ChunkManager cm = new ChunkManager(seed);
             loadChunkRegions(cm, saveRoot.resolve("regions"));
             Log.debug("Loaded ChunkManager");
 
             this.loadedRenderer = new IsoRenderer(1f, "main", cm, container);
-            cm.attachRenderer(loadedRenderer);
             Log.debug("Loaded IsoRenderer");
 
         } catch (IOException | ClassNotFoundException e) {
@@ -158,9 +158,7 @@ public class SaveLoadManager {
             for (Path regionFile : files) {
                 try (ObjectInputStream ois = openGzippedInput(regionFile)) {
                     List<Chunk> chunkList = (List<Chunk>) ois.readObject();
-                    for (Chunk c : chunkList) {
-                        chunkManager.addChunk(c);
-                    }
+                    chunkManager.addDirtyChunks(chunkList);
                 } catch (IOException | ClassNotFoundException e) {
                     Log.error("Failed to load region " + regionFile.getFileName() + ": " + e.getMessage());
                 }

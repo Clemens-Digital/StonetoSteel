@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.newdawn.slick.Color;
@@ -20,6 +21,7 @@ public class MultiTileObject extends GameObject{
     private final int tileWidth;
     private final int tileHeight;
     private final List<TileBlock> blocks = new ArrayList<>();
+    private List<TileBlock> sortedBlocks = null;
 
     private static class TileBlock implements Serializable{
         private final int x;
@@ -106,15 +108,19 @@ public class MultiTileObject extends GameObject{
 
     @Override
     public void render(IsoRenderer r, int lodLevel) {
-        blocks.stream()
-              .sorted((b,a) -> {
-              int cmpY = Integer.compare(b.getY(), a.getY());
-              if (cmpY != 0) return cmpY;
-              return Integer.compare(b.getX(), a.getX());
-              })
-              .forEach(block -> r.drawHeightedTile(this.tileSheet, block.getTileIndex(), getX() + block.getX(), getY() + block.getY(), chunkX, chunkY, block.getHeight()));
-
-        if (Game.showDebug) {
+        if(blocks.isEmpty()) return;
+        sortedBlocks.forEach(block ->
+            r.drawHeightedTile(
+                this.tileSheet,
+                block.getTileIndex(),
+                getX() + block.getX(),
+                getY() + block.getY(),
+                chunkX,
+                chunkY,
+                block.getHeight()
+            )
+        );
+        if (Game.showDebug&&this.hitbox!=null&&r.getZoom()>=0.8f) {
             r.getGraphics().setColor(Color.black);
             r.getGraphics().draw(hitbox);
         }
@@ -122,6 +128,7 @@ public class MultiTileObject extends GameObject{
 
     public void addBlock(int index, int x, int y, int h){
         blocks.add(new TileBlock(x, y, h, index));
+        sortBlocks();
     }
 
     @Override
@@ -129,7 +136,7 @@ public class MultiTileObject extends GameObject{
 
     @Override
     public void calculateHitbox(IsoRenderer r){
-        if (blocks.isEmpty()) return;
+        if (blocks.isEmpty() || blocks == null) return;
         if (this.hitbox==null) this.hitbox = new Rectangle(0, 0, 0, 0);
 
         float minScreenX = Float.MAX_VALUE;
@@ -156,5 +163,14 @@ public class MultiTileObject extends GameObject{
         }
 
         hitbox.setBounds(minScreenX, minScreenY, maxScreenX - minScreenX, maxScreenY - minScreenY);
+    }
+
+    Comparator<TileBlock> sortByYThenX = (b, a) -> {
+        int cmpY = Integer.compare(b.getY(), a.getY());
+        return (cmpY != 0) ? cmpY : Integer.compare(b.getX(), a.getX());
+    };
+
+    private void sortBlocks() {
+        this.sortedBlocks = blocks.stream().sorted(sortByYThenX).toList();
     }
 }

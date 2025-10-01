@@ -21,6 +21,7 @@ import io.github.anthonyclemens.GameObjects.Mobs.Fish;
 import io.github.anthonyclemens.GameObjects.Mobs.Spider;
 import io.github.anthonyclemens.GameObjects.Mobs.Zombie;
 import io.github.anthonyclemens.GameObjects.MultiTileObject;
+import io.github.anthonyclemens.GameObjects.SingleTileObjects.SingleTileObject;
 import io.github.anthonyclemens.GameStates;
 import io.github.anthonyclemens.Logic.Calender;
 import io.github.anthonyclemens.Logic.DayNightCycle;
@@ -38,7 +39,9 @@ import io.github.anthonyclemens.utils.AmbientSoundManager;
 import io.github.anthonyclemens.utils.CollisionHandler;
 import io.github.anthonyclemens.utils.DebugGUI;
 import io.github.anthonyclemens.utils.DisplayHUD;
+import io.github.anthonyclemens.utils.FrameTimeGraph;
 import io.github.anthonyclemens.utils.Profiler;
+import io.github.anthonyclemens.utils.ProfilerRenderer;
 import io.github.anthonyclemens.utils.SaveLoadManager;
 
 public class Game extends BasicGameState{
@@ -54,7 +57,6 @@ public class Game extends BasicGameState{
     public static boolean paused = false;
     private int updateAccumulator = 0;
     private static final int TARGET_INTERVAL = 1000 / 15;
-    private boolean isRaining = false;
 
     // Game Constants
     private Image backgroundImage;
@@ -86,14 +88,15 @@ public class Game extends BasicGameState{
     public static SoundBox gameObjectSoundBox;
 
     // Debug Related Variables
+    private FrameTimeGraph frameGraph;
     public static boolean showDebug = true;
     public static boolean soundDebug = false;
     public static boolean showCursorLoc = false;
     private Profiler updateProfiler;
     int frameCounter = 0;
     private static final int UPDATE_INTERVAL = 8;
+    private long lastFrameTime = System.nanoTime();
     Map<String, String> updateData = null;
-    Map<String, String> renderData = null;
 
 
     @Override
@@ -103,6 +106,7 @@ public class Game extends BasicGameState{
 
     @Override
     public void enter(GameContainer container, StateBasedGame game) throws SlickException {
+        frameGraph = new FrameTimeGraph(400);
         initProfiling(container);
         initSystems();
         logGameState();
@@ -187,16 +191,17 @@ public class Game extends BasicGameState{
             updateProfiler.tick("Player interaction");
 
             env.updateDayNightCycle(delta);
-            renderer.updateChunksAroundPlayer(delta,player);
+            renderer.updateChunksAroundPlayer(delta,player,env);
             updateProfiler.tick("Update Visible Chunks and GameObjects");
         }
     }
 
     @Override
     public void render(GameContainer container, StateBasedGame game, Graphics g) throws SlickException {
+        long now = System.nanoTime();
         backgroundImage.draw(0, 0, container.getWidth(), container.getHeight());
         renderer.render();
-        player.render(container, zoom, camera.getX(), camera.getY());
+        player.render(container, zoom, camera.getX(), camera.getY(), renderer);
         env.renderOverlay(container, g);
         if (showHUD) displayHUD.renderHUD(container, g, calender, env, player);
         if (showCursorLoc){
@@ -207,13 +212,13 @@ public class Game extends BasicGameState{
         frameCounter++;
         if (frameCounter >= UPDATE_INTERVAL && showDebug) {
             updateData = updateProfiler.getAdaptiveTimes();
-            renderData = renderer.getProfiler().getAdaptiveTimes();
-
             frameCounter = 0;
         }
-        if (updateData != null && renderData != null && showDebug) {
+        frameGraph.addSample(now - lastFrameTime);
+        lastFrameTime = now;
+        if (updateData != null && showDebug) {
             drawLegend(g, updateData, 0, container.getHeight()-(updateData.size()*24f), 20);
-            drawLegend(g, renderData, 420, container.getHeight()-(updateData.size()*24f),20);
+            ProfilerRenderer.renderGraph(g, frameGraph, container.getWidth() - 432f, container.getHeight() - 110f, 360, 100);
         }
     }
 
@@ -243,35 +248,20 @@ public class Game extends BasicGameState{
         if (input.isKeyPressed(Input.KEY_F)){
             int[] clickedLoc = renderer.screenToIsometric(input.getMouseX(), input.getMouseY());
             Chunk clickedChunk = chunkManager.getChunk(clickedLoc[2], clickedLoc[3]);
-            int numGobs = clickedChunk.getGameObjects().size();
             Fish nFish = new Fish(clickedLoc[0], clickedLoc[1], clickedLoc[2], clickedLoc[3]);
-            nFish.setID(numGobs);
             clickedChunk.addGameObject(nFish);
-        }
-        if (input.isKeyDown(Input.KEY_LSHIFT) && input.isKeyPressed(Input.KEY_C)){
-            if (renderer.isUseFastGraphics()) {
-                renderer.setUseFastGraphics(false);
-                Log.info("Switched to normal graphics mode.");
-            } else {
-                renderer.setUseFastGraphics(true);
-                Log.info("Switched to fast graphics mode.");
-            }
         }
         if (input.isKeyPressed(Input.KEY_Z)){
             int[] clickedLoc = renderer.screenToIsometric(input.getMouseX(), input.getMouseY());
             Chunk clickedChunk = chunkManager.getChunk(clickedLoc[2], clickedLoc[3]);
-            int numGobs = clickedChunk.getGameObjects().size();
             Zombie nZomb = new Zombie(clickedLoc[0], clickedLoc[1], clickedLoc[2], clickedLoc[3]);
-            nZomb.setID(numGobs);
             nZomb.setDestinationByGlobalPosition(player.getPlayerLocation());
             clickedChunk.addGameObject(nZomb);
         }
         if (input.isKeyPressed(Input.KEY_T)){
             int[] clickedLoc = renderer.screenToIsometric(input.getMouseX(), input.getMouseY());
             Chunk clickedChunk = chunkManager.getChunk(clickedLoc[2], clickedLoc[3]);
-            int numGobs = clickedChunk.getGameObjects().size();
             Spider nSpider = new Spider(clickedLoc[0], clickedLoc[1], clickedLoc[2], clickedLoc[3]);
-            nSpider.setID(numGobs);
             nSpider.setDestinationByGlobalPosition(player.getPlayerLocation());
             clickedChunk.addGameObject(nSpider);
         }
@@ -279,12 +269,15 @@ public class Game extends BasicGameState{
         if (input.isKeyPressed(Input.KEY_B)){
             int[] clickedLoc = renderer.screenToIsometric(input.getMouseX(), input.getMouseY());
             Chunk clickedChunk = chunkManager.getChunk(clickedLoc[2], clickedLoc[3]);
-            int numGobs = clickedChunk.getGameObjects().size();
             MultiTileObject test = new MultiTileObject("mtos/tree.mto", clickedLoc[0], clickedLoc[1], clickedLoc[2], clickedLoc[3]);
-            test.setID(numGobs);
             clickedChunk.addGameObject(test);
         }
-        if(input.isKeyPressed(Input.KEY_R)) isRaining = !isRaining;
+        if (input.isKeyPressed(Input.KEY_L)){
+            int[] clickedLoc = renderer.screenToIsometric(input.getMouseX(), input.getMouseY());
+            Chunk clickedChunk = chunkManager.getChunk(clickedLoc[2], clickedLoc[3]);
+            SingleTileObject log = new SingleTileObject("main", "log", 30, clickedLoc[0], clickedLoc[1], clickedLoc[2], clickedLoc[3]);
+            clickedChunk.addGameObject(log);
+        }
     }
 
     private void updateMouse(Input input){
@@ -341,7 +334,7 @@ public class Game extends BasicGameState{
 
     public void drawLegend(Graphics g, Map<String, String> data, float startX, float startY, int spacingY) {
         int index = 0;
-        g.setColor(Color.white);
+        g.setColor(Color.black);
         for (var entry : data.entrySet()) {
             String label = entry.getKey();
             String time = entry.getValue();
@@ -401,6 +394,7 @@ public class Game extends BasicGameState{
                 saveLoadManager.getPlayerSpeed(),
                 saveLoadManager.getPlayerHealth()
             );
+            calender = new Calender(1, 1, CALENDER_YEAR);
             env = saveLoadManager.getDayNightCycle();
             player.setPlayerInventory(saveLoadManager.getPlayerInventory());
         }
@@ -410,7 +404,6 @@ public class Game extends BasicGameState{
 
     private void initRenderer(GameContainer container) {
         renderer = new IsoRenderer(zoom, "main", chunkManager, container);
-        chunkManager.attachRenderer(renderer);
     }
 
     private void initAudio() {

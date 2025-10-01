@@ -30,7 +30,7 @@ public class SingleTileObject extends GameObject{
     @Override
     public void render(IsoRenderer r, int lodLevel) {
         r.drawScaledTile(tileSheet,i,x,y,chunkX,chunkY);
-        if(Game.showDebug&&this.hitbox!=null){
+        if(Game.showDebug&&this.hitbox!=null&&r.getZoom()>=0.8f){
             r.getGraphics().setColor(Color.black);
             r.getGraphics().draw(hitbox);
         }

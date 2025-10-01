@@ -1,5 +1,6 @@
 package io.github.anthonyclemens.states;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -20,13 +21,13 @@ import com.codedisaster.steamworks.SteamAPI;
 
 import io.github.anthonyclemens.GameStates;
 import io.github.anthonyclemens.Math.TwoDimensionMath;
+import io.github.anthonyclemens.Rendering.FontManager;
 import io.github.anthonyclemens.Rendering.RenderUtils;
 import io.github.anthonyclemens.Rendering.SpriteManager;
 import io.github.anthonyclemens.Settings;
 import io.github.anthonyclemens.SharedData;
 import io.github.anthonyclemens.Sound.JukeBox;
 import io.github.anthonyclemens.Sound.SoundBox;
-import io.github.anthonyclemens.Utils;
 import io.github.anthonyclemens.utils.AssetLoader;
 
 public class LoadingScreen extends BasicGameState {
@@ -34,7 +35,7 @@ public class LoadingScreen extends BasicGameState {
     private Image loadingImage;
     private static final int BAR_WIDTH = 600;
     private static final int BAR_HEIGHT = 64;
-    private static final String MAIN_FONT = "fonts/Roboto-Black.ttf";
+    private static final String MAIN_FONT = "Roboto";
     private static final List<String> loadingTips = List.of(
         "Not everything is harvestable... but most things are breakable.",
         "Mobs can die-listen for sound cues and watch their health.",
@@ -42,11 +43,26 @@ public class LoadingScreen extends BasicGameState {
         "Death isn't the end-some objects drop useful loot.",
         "Exploration gets easier when you move chunk by chunk.",
         "The time of day affects how some things behave.",
-        "Saving works best when you're standing still in a quiet zone."
+        "Saving works best when you're standing still in a quiet zone.",
+        "Fire spreads fast - keep it contained, or lose more than you think.",
+        "Low on food? Fishing might save you when crops won't grow.",
+        "Carry a backup tool - things break at the worst times.",
+        "Sometimes it's safer to watch than to fight.",
+        "Abandoned structures might hide both loot and danger.",
+        "Inventory space is survival - don’t carry what you can’t use.",
+        "Nightfall comes quicker than you think; watch the shadows stretch.",
+        "Gather wood early; nights are better spent inside.",
+        "A roof is more than shelter; it’s a shield from unwanted eyes.",
+        "Zombies slow in water… most of the time.",
+        "Scorpions strike fast - keep your distance until they lunge.",
+        "Skeletons can't hit what they can't see - use cover wisely.",
+        "Work in daylight, defend in darkness."
     );
     private static TrueTypeFont mainFont;
 
     private String currentTip;
+    private int tipTimer = 0;
+    private static final int TIP_INTERVAL = 5000;
     private boolean waitingForSpace = false;
     private boolean doneLoading = false;
     private int frameCount = 0;
@@ -62,7 +78,7 @@ public class LoadingScreen extends BasicGameState {
     @Override
     public void enter(GameContainer container, StateBasedGame game) throws SlickException {
         Log.debug("Loading Screen entered.");
-        mainFont = Utils.getFont(MAIN_FONT, 48f);
+        mainFont = FontManager.getFont(MAIN_FONT, 48);
         currentTip = loadingTips.get(new Random().nextInt(loadingTips.size()));
         if(!Settings.getInstance().getSoundPack().equals(lastSoundPack)){
             Log.debug("Sound pack changed from " + lastSoundPack + " to " + Settings.getInstance().getSoundPack());
@@ -143,7 +159,13 @@ public class LoadingScreen extends BasicGameState {
         float textX = TwoDimensionMath.getMiddleX(mainFont.getWidth(loadingText), container.getWidth());
         float textY = barY - 64f;
         mainFont.drawString(textX, textY, loadingText, Color.black);
-        mainFont.drawString(TwoDimensionMath.getMiddleX(mainFont.getWidth(currentTip), container.getWidth()), 32, currentTip, Color.black);
+        List<String> wrappedTip = wrapText(mainFont, currentTip, container.getWidth() - 40);
+        float startY = 32;
+        for (int i = 0; i < wrappedTip.size(); i++) {
+            String line = wrappedTip.get(i);
+            float lineX = TwoDimensionMath.getMiddleX(mainFont.getWidth(line), container.getWidth());
+            mainFont.drawString(lineX, startY + i * mainFont.getLineHeight(), line, Color.black);
+        }
         frameCount++;
     }
 
@@ -162,11 +184,41 @@ public class LoadingScreen extends BasicGameState {
             SharedData.enterState(GameStates.GAME, game);
             waitingForSpace = false;
         }
+        // Tip rotation logic
+        tipTimer += delta;
+        if (tipTimer >= TIP_INTERVAL) {
+            tipTimer = 0;
+            // Pick a new tip that is different from the current one
+            String newTip;
+            do {
+                newTip = loadingTips.get(new Random().nextInt(loadingTips.size()));
+            } while (newTip.equals(currentTip));
+            currentTip = newTip;
+        }
+
         SteamAPI.runCallbacks();
     }
 
     @Override
     public int getID() {
         return GameStates.LOADING_SCREEN.getID();
+    }
+
+    private List<String> wrapText(TrueTypeFont font, String text, int maxWidth) {
+        List<String> lines = new ArrayList<>();
+        StringBuilder line = new StringBuilder();
+        for (String word : text.split(" ")) {
+            String testLine = line.length() == 0 ? word : line + " " + word;
+            if (font.getWidth(testLine) > maxWidth) {
+                lines.add(line.toString());
+                line = new StringBuilder(word);
+            } else {
+                line = new StringBuilder(testLine);
+            }
+        }
+        if (line.length() > 0) {
+            lines.add(line.toString());
+        }
+        return lines;
     }
 }
