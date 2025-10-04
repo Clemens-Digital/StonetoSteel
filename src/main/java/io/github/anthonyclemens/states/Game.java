@@ -34,7 +34,7 @@ import io.github.anthonyclemens.Sound.JukeBox;
 import io.github.anthonyclemens.Sound.SoundBox;
 import io.github.anthonyclemens.Utils;
 import io.github.anthonyclemens.WorldGen.Chunk;
-import io.github.anthonyclemens.WorldGen.ChunkManager;
+import io.github.anthonyclemens.WorldGen.World;
 import io.github.anthonyclemens.utils.AmbientSoundManager;
 import io.github.anthonyclemens.utils.CollisionHandler;
 import io.github.anthonyclemens.utils.DebugGUI;
@@ -74,7 +74,7 @@ public class Game extends BasicGameState{
     private DayNightCycle env;
     private Calender calender;
     private IsoRenderer renderer;
-    ChunkManager chunkManager;
+    World chunkManager;
     private CollisionHandler collisionHandler;
     private DebugGUI debugGUI;
     private DisplayHUD displayHUD;
@@ -121,6 +121,7 @@ public class Game extends BasicGameState{
         initRenderer(container);
         initAudio();
         initDebugging();
+        zoom = 1f;
     }
 
     @Override
@@ -255,14 +256,14 @@ public class Game extends BasicGameState{
             int[] clickedLoc = renderer.screenToIsometric(input.getMouseX(), input.getMouseY());
             Chunk clickedChunk = chunkManager.getChunk(clickedLoc[2], clickedLoc[3]);
             Zombie nZomb = new Zombie(clickedLoc[0], clickedLoc[1], clickedLoc[2], clickedLoc[3]);
-            nZomb.setDestinationByGlobalPosition(player.getPlayerLocation());
+            //nZomb.setDestinationByGlobalPosition(player.getPlayerLocation());
             clickedChunk.addGameObject(nZomb);
         }
         if (input.isKeyPressed(Input.KEY_T)){
             int[] clickedLoc = renderer.screenToIsometric(input.getMouseX(), input.getMouseY());
             Chunk clickedChunk = chunkManager.getChunk(clickedLoc[2], clickedLoc[3]);
             Spider nSpider = new Spider(clickedLoc[0], clickedLoc[1], clickedLoc[2], clickedLoc[3]);
-            nSpider.setDestinationByGlobalPosition(player.getPlayerLocation());
+            //nSpider.setDestinationByGlobalPosition(player.getPlayerLocation());
             clickedChunk.addGameObject(nSpider);
         }
         if (input.isKeyPressed(Input.KEY_P)) paused = !paused;
@@ -312,7 +313,7 @@ public class Game extends BasicGameState{
         return env;
     }
 
-    public ChunkManager getChunkManager() {
+    public World getChunkManager() {
         return chunkManager;
     }
 
@@ -381,7 +382,7 @@ public class Game extends BasicGameState{
 
     private void initWorld(GameContainer container) {
         if (SharedData.isNewGame() || !SaveLoadManager.exists(SharedData.getSaveFilePath())) {
-            chunkManager = new ChunkManager(new Random(Sys.getTime()).nextInt());
+            chunkManager = new World(new Random(Sys.getTime()).nextInt());
             createNewPlayer(container.getWidth() / 2f, container.getHeight() / 2f, 0.075f, 100);
             calender = new Calender(1, 1, CALENDER_YEAR);
             env = new DayNightCycle(DAY_LENGTH, SUNRISE_TIME, SUNSET_TIME, calender);

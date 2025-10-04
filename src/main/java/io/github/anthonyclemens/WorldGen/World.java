@@ -14,7 +14,7 @@ import io.github.anthonyclemens.GameObjects.GameObject;
  * Manages world chunks, their generation, and biome assignment.
  * Handles chunk caching and provides utilities for chunk/block lookup.
  */
-public class ChunkManager{
+public class World{
     public static final int CHUNK_SIZE = 24;
     private final Map<String, Chunk> chunks = new ConcurrentHashMap<>();
     private final int seed;
@@ -38,7 +38,7 @@ public class ChunkManager{
      * Constructs a ChunkManager with the given world seed.
      * @param seed The world seed.
      */
-    public ChunkManager(int seed) {
+    public World(int seed) {
         this.seed = seed;
         this.elevationGen = new PerlinNoise(seed);
         this.moistureGen = new PerlinNoise(seed + 1123);
@@ -186,7 +186,7 @@ public class ChunkManager{
     }
 
     public List<Chunk> getDirtyChunks() {
-        return chunks.values().stream().filter(Chunk::isDirty).toList();
+        return chunks.values().parallelStream().filter(Chunk::isDirty).toList();
     }
 
     public void addDirtyChunks(List<Chunk> dirtyChunks) {

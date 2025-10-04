@@ -12,6 +12,7 @@ import org.lwjgl.Sys;
 
 import io.github.anthonyclemens.GameObjects.GameObject;
 import io.github.anthonyclemens.GameObjects.Mobs.Mob;
+import io.github.anthonyclemens.GameObjects.SingleTileObjects.Item;
 import io.github.anthonyclemens.Logic.DayNightCycle;
 import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
@@ -203,7 +204,7 @@ public class Chunk implements Serializable {
      * Removes a GameObject by index.
      */
     public void removeGameObject(UUID uuid){
-        GameObject toRemove = gameObjects.stream()
+        GameObject toRemove = gameObjects.parallelStream()
                 .filter(gob -> gob.getUUID().equals(uuid))
                 .findFirst()
                 .orElse(null);
@@ -219,7 +220,7 @@ public class Chunk implements Serializable {
     }
 
     public GameObject getGameObject(UUID uuid) {
-        return gameObjects.stream()
+        return gameObjects.parallelStream()
                 .filter(gob -> gob.getUUID().equals(uuid))
                 .findFirst()
                 .orElse(null);
@@ -236,34 +237,45 @@ public class Chunk implements Serializable {
      * Updates all GameObjects in this chunk.
      */
     public void update(IsoRenderer r, int deltaTime, Player player , DayNightCycle env) {
-        List<GameObject> objectsCopy = new ArrayList<>(gameObjects);
+        // Create a snapshot (shallow copy) of the list to safely iterate
+        final List<GameObject> objectsSnapshot = new ArrayList<>(gameObjects);
         //Generate new enemies if it is night, and player is not in the current chunk
         if(!r.isSunUp() && this!=player.getCurrentChunk()) {
             GameObject nGob = GameObjectGenerator.generateEnemyForBiome(rand, biome, chunkX, chunkY);
             if(nGob!=null) {
                 nGob.initializeRenderPosition(r);
-                objectsCopy.add(nGob);
+                // adding to the snapshot ensures the new enemy is updated this tick
+                // but you must also add it to the real list if it should persist:
+                gameObjects.add(nGob);
+                objectsSnapshot.add(nGob);
             }
         }
-        for (GameObject obj : objectsCopy) {
+        long now = Sys.getTime();
+        for (GameObject obj : objectsSnapshot) {
+            if (obj == null) continue;
+
             if (obj instanceof Mob mob) {
-                mob.think(Sys.getTime(),player);
+                mob.think(now, player, r.getChunkManager());
             }
-            if (obj != null) {
-                obj.update(r, deltaTime);
-                if (obj.getHealth() == 0 && obj.getHealth() > -1) {
-                    removeGameObject(obj.getUUID());
-                }
+
+            obj.update(r, deltaTime);
+
+            if (obj.getHealth() == 0) {
+                removeGameObject(obj.getUUID());
+                continue;
+            }
+
+            if (obj instanceof Item item && item.getBirthDelta(now) > 300_000) {
+                removeGameObject(item.getUUID());
             }
         }
     }
 
 
     public void calculateHitbox(IsoRenderer r) {
-        List<GameObject> objectsCopy = new ArrayList<>(gameObjects);
-        for (GameObject obj : objectsCopy) {
-            obj.calculateHitbox(r);
-        }
+        // Use a snapshot to avoid concurrent modification while calculating hitboxes.
+        final List<GameObject> objectsSnapshot = new ArrayList<>(gameObjects);
+        objectsSnapshot.stream().forEach(obj -> obj.calculateHitbox(r));
     }
 
     /**

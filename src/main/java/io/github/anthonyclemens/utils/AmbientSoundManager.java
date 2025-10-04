@@ -70,6 +70,7 @@ public class AmbientSoundManager {
             ambientSoundBox.playRandomSound("nightSounds");
         }
         Biome currentBiome = player.getBiome();
+        if(currentBiome==null) return;
         if (lastBiome != currentBiome) {
             lastBiome = currentBiome;
             ambientSoundBox.stopAllSounds();

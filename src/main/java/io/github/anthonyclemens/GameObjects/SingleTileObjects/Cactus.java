@@ -4,7 +4,6 @@ import java.util.Random;
 
 import org.newdawn.slick.Color;
 
-import io.github.anthonyclemens.GameObjects.ItemType;
 import io.github.anthonyclemens.GameObjects.Items;
 import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
@@ -12,7 +11,7 @@ import io.github.anthonyclemens.Rendering.SpriteManager;
 import io.github.anthonyclemens.WorldGen.Chunk;
 import io.github.anthonyclemens.states.Game;
 
-public class Grass extends SingleTileObject{
+public class Cactus extends SingleTileObject{
 
     private final long shakeDuration; // When shaking should end
     private transient long lastDamageTime = 0; // Timestamp of last time damage was taken (milliseconds)
@@ -25,17 +24,15 @@ public class Grass extends SingleTileObject{
     private final Item droppedItem;
     private boolean dropItem = false;
 
-    public Grass(Random rand, int x, int y, int chunkX, int chunkY) {
-        super("grass","",-1, x, y, chunkX, chunkY);
+    public Cactus(Random rand, int x, int y, int chunkX, int chunkY) {
+        super("main","cactus", (byte) 9, x, y, chunkX, chunkY);
         this.rand = rand;
-        this.droppedItem = new Item(Items.ITEM_SEED, x, y, chunkX, chunkY);
-        this.name = "grass";
-        this.i = (byte) rand.nextInt(8);
+        this.droppedItem = new Item(Items.ITEM_CACTUS, x, y, chunkX, chunkY);
         this.health = 5;
-        this.solid = false;
+        this.solid = true;
         this.shakeDuration = 250;
         this.shakeAggression = 2;
-        this.droppedItem.setQuantity(1 + rand.nextInt(3));
+        this.droppedItem.setQuantity(1);
         this.maxHealth = this.health;
         this.tileWidth = SpriteManager.getSpriteWidth(tileSheet);
         this.tileHeight = SpriteManager.getSpriteHeight(tileSheet);
@@ -88,13 +85,7 @@ public class Grass extends SingleTileObject{
 
     @Override
     public void onHit(Player player, Items item){
-        damageCooldown = 1000;
-        if(item.getItemType() == ItemType.HOE){
-            removeHealth(item.getDamage());
-            damageCooldown = (long) (500 / item.getSpeed());
-        }else{
-            removeHealth(1);
-        }
+        removeHealth(1);
     }
 
 }

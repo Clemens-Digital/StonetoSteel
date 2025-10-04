@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.newdawn.slick.geom.Rectangle;
 
+import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
 import io.github.anthonyclemens.WorldGen.Biome;
 
@@ -27,6 +28,7 @@ public abstract class GameObject implements Serializable{
     protected int maxHealth;
     protected boolean solid = true;
     protected boolean alwaysCalcHitbox = false;
+    protected transient boolean hover = false;
 
     protected GameObject(String tileSheet, int x, int y, int chunkX, int chunkY, String objName) {
         this.x = x;
@@ -150,10 +152,16 @@ public abstract class GameObject implements Serializable{
         this.peaceful = peaceful;
     }
 
-    public abstract void calculateHitbox(IsoRenderer r);
-
     public void setTileSheet(String tileSheet) {
         this.tileSheet = tileSheet;
+    }
+
+    public boolean isHover() {
+        return hover;
+    }
+
+    public void setHover(boolean hover) {
+        this.hover = hover;
     }
 
     public void setLocation(int x, int y, int chunkX, int chunkY){
@@ -171,4 +179,10 @@ public abstract class GameObject implements Serializable{
     public abstract void render(IsoRenderer r, int lodLevel);
 
     public abstract void update(IsoRenderer r, int deltaTime);
+
+    public abstract void calculateHitbox(IsoRenderer r);
+
+    public abstract void onUse(Player player, Items item);
+
+    public abstract void onHit(Player player, Items item);
 }

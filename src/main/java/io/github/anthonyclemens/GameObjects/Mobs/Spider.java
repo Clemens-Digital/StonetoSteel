@@ -2,8 +2,8 @@ package io.github.anthonyclemens.GameObjects.Mobs;
 
 import java.util.Random;
 
+import io.github.anthonyclemens.GameObjects.Items;
 import io.github.anthonyclemens.GameObjects.SingleTileObjects.Item;
-import io.github.anthonyclemens.GameObjects.SingleTileObjects.Items;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
 import io.github.anthonyclemens.Rendering.SpriteManager;
 import io.github.anthonyclemens.WorldGen.Biome;

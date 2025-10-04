@@ -10,7 +10,7 @@ import org.newdawn.slick.util.Log;
 import io.github.anthonyclemens.Logic.DayNightCycle;
 import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.WorldGen.Chunk;
-import io.github.anthonyclemens.WorldGen.ChunkManager;
+import io.github.anthonyclemens.WorldGen.World;
 
 /**
  * The IsoRenderer class is responsible for rendering isometric tiles and chunks
@@ -24,7 +24,7 @@ public class IsoRenderer {
     private final SpriteSheet worldTileSheet;
     private int offsetX;
     private int offsetY;
-    private final ChunkManager chunkManager; // Reference to the chunk manager
+    private final World chunkManager; // Reference to the chunk manager
     private int[] visibleChunks; // Array to store the visible chunks
     private boolean firstFrame = true; // Flag to check if it's the first frame
     private final GameContainer container; // Reference to the game container
@@ -35,7 +35,7 @@ public class IsoRenderer {
     private boolean isSunUp = true;
     private final FastGraphics fastGraphics = new FastGraphics();
 
-    public IsoRenderer(float zoom, String worldTileSheet, ChunkManager chunkManager, GameContainer container){
+    public IsoRenderer(float zoom, String worldTileSheet, World chunkManager, GameContainer container){
         this.zoom = zoom;
         this.worldTileSheet = SpriteManager.getSpriteSheet(worldTileSheet);
         this.chunkManager = chunkManager;
@@ -156,8 +156,8 @@ public class IsoRenderer {
 
         int halfTileWidth = TILE_SIZE / 2;
         int quarterTileHeight = TILE_SIZE / 4;
-        int preCompX = halfTileWidth + (chunkX - chunkY) * ChunkManager.CHUNK_SIZE * halfTileWidth;
-        int preCompY = quarterTileHeight + (chunkX + chunkY) * ChunkManager.CHUNK_SIZE * quarterTileHeight;
+        int preCompX = halfTileWidth + (chunkX - chunkY) * World.CHUNK_SIZE * halfTileWidth;
+        int preCompY = quarterTileHeight + (chunkX + chunkY) * World.CHUNK_SIZE * quarterTileHeight;
 
         for (int blockY = 0; blockY < lodSize; blockY++) {
             for (int blockX = 0; blockX < lodSize; blockX++) {
@@ -215,12 +215,12 @@ public class IsoRenderer {
 
     public float calculateIsoX(int x, int y, int chunkX, int chunkY) {
         int halfTileWidth = (TILE_SIZE / 2);
-        return (((x - y) * halfTileWidth + (chunkX - chunkY) * ChunkManager.CHUNK_SIZE * halfTileWidth) * this.zoom) + offsetX;
+        return (((x - y) * halfTileWidth + (chunkX - chunkY) * World.CHUNK_SIZE * halfTileWidth) * this.zoom) + offsetX;
     }
 
     public float calculateIsoY(int x, int y, int chunkX, int chunkY) {
         int quarterTileHeight = (TILE_SIZE / 4);
-        return (((x + y) * quarterTileHeight + (chunkX + chunkY) * ChunkManager.CHUNK_SIZE * quarterTileHeight) * this.zoom) + offsetY;
+        return (((x + y) * quarterTileHeight + (chunkX + chunkY) * World.CHUNK_SIZE * quarterTileHeight) * this.zoom) + offsetY;
     }
 
     public float calculateFastIsoX(int x, int y, int halfTileWidth, int preCompX) {
@@ -244,8 +244,16 @@ public class IsoRenderer {
         this.getTile(tileSheet, tileType).draw(calculateIsoX(xPos, yPos, chunkX, chunkY), calculateIsoY(xPos, yPos, chunkX, chunkY), SpriteManager.getSpriteWidth(tileSheet)*zoom, SpriteManager.getSpriteHeight(tileSheet)*zoom);
     }
 
+    public void drawScaledTile(String tileSheet, int tileType, int xPos, int yPos, int chunkX, int chunkY, Color color){
+        this.getTile(tileSheet, tileType).draw(calculateIsoX(xPos, yPos, chunkX, chunkY), calculateIsoY(xPos, yPos, chunkX, chunkY), SpriteManager.getSpriteWidth(tileSheet)*zoom, SpriteManager.getSpriteHeight(tileSheet)*zoom, color);
+    }
+
     public void drawTileIso(String tileSheet, int tileType, float xReal, float yReal){
         this.getTile(tileSheet, tileType).draw(xReal, yReal, SpriteManager.getSpriteWidth(tileSheet)*zoom, SpriteManager.getSpriteHeight(tileSheet)*zoom);
+    }
+
+    public void drawTileIso(String tileSheet, int tileType, float xReal, float yReal, Color color){
+        this.getTile(tileSheet, tileType).draw(xReal, yReal, SpriteManager.getSpriteWidth(tileSheet)*zoom, SpriteManager.getSpriteHeight(tileSheet)*zoom, color);
     }
 
     public void drawHeightedTile(String tileSheet, int tileType, int xPos, int yPos, int chunkX, int chunkY, int height){
@@ -305,7 +313,7 @@ public class IsoRenderer {
     //Setters
 
 
-    public ChunkManager getChunkManager(){
+    public World getChunkManager(){
         return this.chunkManager;
     }
 

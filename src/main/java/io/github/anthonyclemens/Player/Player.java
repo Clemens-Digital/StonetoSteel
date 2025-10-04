@@ -12,8 +12,8 @@ import org.newdawn.slick.geom.Line;
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.util.Log;
 
+import io.github.anthonyclemens.GameObjects.Items;
 import io.github.anthonyclemens.GameObjects.SingleTileObjects.Item;
-import io.github.anthonyclemens.GameObjects.SingleTileObjects.Items;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
 import io.github.anthonyclemens.Rendering.SpriteManager;
 import io.github.anthonyclemens.Settings;
@@ -21,7 +21,7 @@ import io.github.anthonyclemens.Sound.SoundBox;
 import io.github.anthonyclemens.Utils;
 import io.github.anthonyclemens.WorldGen.Biome;
 import io.github.anthonyclemens.WorldGen.Chunk;
-import io.github.anthonyclemens.WorldGen.ChunkManager;
+import io.github.anthonyclemens.WorldGen.World;
 import io.github.anthonyclemens.states.Game;
 
 public class Player {
@@ -386,20 +386,14 @@ public class Player {
      * Resets the player's stats and state to default values.
      */
     public void reset() {
-        for (Map.Entry<Items, Integer> entry : playerInventory.getItems().entrySet()) {
-            int i;
+        Map<Items,Integer> dropped = playerInventory.clearAndReturnItems();
+        for (Map.Entry<Items,Integer> entry : dropped.entrySet()) {
             Items item = entry.getKey();
             int quantity = entry.getValue();
-            playerInventory.removeItem(item, quantity);
-            switch(item.toString()) {
-                case "ITEM_WOOD" -> i=110;
-                case "ITEM_STONE" -> i=111;
-                case "ITEM_CACTUS" -> i=120;
-                default -> i=0;
-            }
-            Item itemToDrop = new Item("main", item.toString(), i, playerLoc[0], playerLoc[1], playerLoc[2], playerLoc[3]);
+
+            Item itemToDrop = new Item(item, playerLoc[0], playerLoc[1], playerLoc[2], playerLoc[3]);
             itemToDrop.setQuantity(quantity);
-            currentChunk.addGameObject(itemToDrop); // Throws java.util.ConcurrentModificationException @ io.github.anthonyclemens.utils.CollisionHandler.checkPlayerCollision(CollisionHandler.java:26), Need to fix this
+            currentChunk.addGameObject(itemToDrop);
         }
         this.x = 0;
         this.y = 0;
@@ -417,8 +411,18 @@ public class Player {
         this.lastDamageTime = 0;
     }
 
-    public void interact(Input input, ChunkManager cm){
-        interactor.interact(input, cm, playerReach, playerInventory, equippedItem, renderer);
+    public void interact(Input input, World cm){
+        interactor.interact(input, cm, playerReach, playerInventory, this, renderer);
+    }
+
+    // Add getter/setter for equipped item so other systems may change it
+    public Items getEquippedItem() {
+        return Items.ITEM_WOODEN_AXE; // Placeholder until equipment system is implemented
+        //return this.equippedItem;
+    }
+
+    public void setEquippedItem(Items item) {
+        this.equippedItem = item;
     }
 
     private void loadAnimations(){
@@ -454,6 +458,7 @@ public class Player {
     }
 
     public Biome getBiome(){
+        if(this.currentChunk==null) return null;
         return this.currentChunk.getBiome();
     }
 

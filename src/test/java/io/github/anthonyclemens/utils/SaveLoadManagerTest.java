@@ -8,7 +8,7 @@ import org.junit.Test;
 import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.FastGraphics;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
-import io.github.anthonyclemens.WorldGen.ChunkManager;
+import io.github.anthonyclemens.WorldGen.World;
 
 public class SaveLoadManagerTest {
     SaveLoadManager saveLoadManager;
@@ -21,7 +21,7 @@ public class SaveLoadManagerTest {
     public void setup(){
         FastGraphics.setTestMode(true);
         saveLoadManager = new SaveLoadManager();
-        ChunkManager chunkManager = new ChunkManager(123456);
+        World chunkManager = new World(123456);
         preSaveRenderer = new IsoRenderer(123, null, chunkManager, null);
         preSavePlayer = new Player(123, 123, 123);
         preSavePlayer.setVolume(0f);

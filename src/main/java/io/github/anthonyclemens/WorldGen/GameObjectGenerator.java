@@ -9,8 +9,8 @@ import io.github.anthonyclemens.GameObjects.Mobs.Fish;
 import io.github.anthonyclemens.GameObjects.Mobs.Spider;
 import io.github.anthonyclemens.GameObjects.Mobs.Zombie;
 import io.github.anthonyclemens.GameObjects.SingleTileObjects.BerryBush;
+import io.github.anthonyclemens.GameObjects.SingleTileObjects.Cactus;
 import io.github.anthonyclemens.GameObjects.SingleTileObjects.Grass;
-import io.github.anthonyclemens.GameObjects.SingleTileObjects.SingleTileObject;
 import io.github.anthonyclemens.GameObjects.SingleTileObjects.Tree;
 
 /**
@@ -63,7 +63,7 @@ public class GameObjectGenerator {
         for (int y = 0; y < chunkSize - 1; y++) {
             for (int x = 0; x < chunkSize - 1; x++) {
                 if (rand.nextFloat() < DESERT_CACTUS_DENSITY) {
-                    SingleTileObject newObject = new SingleTileObject("main", "cactus", 9, x, y, chunkX, chunkY);
+                    Cactus newObject = new Cactus(rand, x, y, chunkX, chunkY);
                     if (!isOverlapping(newObject, gobs)) {
                         gobs.add(newObject); // Add only if no overlap
                     }
@@ -209,15 +209,15 @@ public class GameObjectGenerator {
 
     private static GameObject makeZombie(Random rand, int chunkX, int chunkY) {
         if(rand.nextFloat(1000) < 999.95) return null;
-        int x = rand.nextInt(ChunkManager.CHUNK_SIZE);
-        int y = rand.nextInt(ChunkManager.CHUNK_SIZE);
+        int x = rand.nextInt(World.CHUNK_SIZE);
+        int y = rand.nextInt(World.CHUNK_SIZE);
         return new Zombie(x, y, chunkX, chunkY);
     }
 
     private static GameObject makeSpider(Random rand, int chunkX, int chunkY) {
         if(rand.nextFloat(1000) < 999.95) return null;
-        int x = rand.nextInt(ChunkManager.CHUNK_SIZE);
-        int y = rand.nextInt(ChunkManager.CHUNK_SIZE);
+        int x = rand.nextInt(World.CHUNK_SIZE);
+        int y = rand.nextInt(World.CHUNK_SIZE);
         return new Spider(x, y, chunkX, chunkY);
     }
 }

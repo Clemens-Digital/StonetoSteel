@@ -13,6 +13,7 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.util.Log;
 
+import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
 import io.github.anthonyclemens.Rendering.SpriteManager;
 import io.github.anthonyclemens.states.Game;
@@ -173,4 +174,10 @@ public class MultiTileObject extends GameObject{
     private void sortBlocks() {
         this.sortedBlocks = blocks.stream().sorted(sortByYThenX).toList();
     }
+
+    @Override
+    public void onUse(Player player, Items item) {}
+
+    @Override
+    public void onHit(Player player, Items item) {}
 }

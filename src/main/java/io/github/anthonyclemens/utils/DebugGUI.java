@@ -41,6 +41,7 @@ public class DebugGUI {
         String seed = (renderer != null ? String.valueOf(renderer.getChunkManager().getSeed()) : "N/A");
         String paused = (Game.paused) ? "Yes" : "No";
         String chunkIsDirty = player.getCurrentChunk().isDirty() ? "Yes" : "No";
+        String playerEquippedItem = (player.getEquippedItem() != null) ? player.getEquippedItem().name() : "None";
 
         String[] debugStrings = new String[] {
             "FPS: " + container.getFPS() + " FPS",
@@ -55,6 +56,7 @@ public class DebugGUI {
             "Player sound: " + playerSound,
             "Player position: " + playerPos,
             "Player health: " + playerHealth + "/" + playerMaxHealth,
+            "Player equipped item: " + playerEquippedItem,
             "World Seed: " + seed,
             "Game Paused: " + paused,
         };

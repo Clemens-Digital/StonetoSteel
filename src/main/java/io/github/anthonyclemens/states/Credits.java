@@ -73,6 +73,8 @@ public class Credits extends BasicGameState{
 
         creditSections.put("ASSET CREDITS", List.of(
             "UI Elements - Crusenho",
+            "Icons - GandalfHardcore",
+            "Inventory Elements - Sr.Toasty",
             "World tileset - Dani Maccari",
             "Grass - Styloo",
             "Character - AxulArt",

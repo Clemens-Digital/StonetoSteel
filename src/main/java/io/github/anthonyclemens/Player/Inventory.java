@@ -1,66 +1,115 @@
 package io.github.anthonyclemens.Player;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 
-import org.newdawn.slick.util.Log;
+import io.github.anthonyclemens.GameObjects.Items;
 
-import io.github.anthonyclemens.GameObjects.SingleTileObjects.Items;
+public class Inventory implements Serializable {
 
-public class Inventory implements Serializable{
+    // --- Inventory configuration ---
+    private static final int ROWS = 4;
+    private static final int COLS = 9;
+    private static final int HOTBAR_SIZE = 9;
 
-    private final Map<Items, Integer> itemCounts = new EnumMap<>(Items.class);
-    private final Map<Items, Integer> itemMaxSizes = Map.of(
-        Items.ITEM_WOOD, 100,
-        Items.ITEM_STONE, 100,
-        Items.ITEM_FISH, 100,
-        Items.ITEM_BERRIES, 100,
-        Items.ITEM_BONES, 100,
-        Items.ITEM_CACTUS, 100,
-        Items.ITEM_SEED, 100,
-        Items.ITEM_WOODEN_SWORD, 1
-    );
+    private final InventorySlot[] slots = new InventorySlot[ROWS * COLS];
+    private int selectedHotbarSlot = 0; // 0–8
 
+    public Inventory() {
+        for (int i = 0; i < slots.length; i++) {
+            slots[i] = new InventorySlot();
+        }
+    }
+
+    // --- Hotbar methods ---
+    public void selectHotbarSlot(int index) {
+        if (index >= 0 && index < HOTBAR_SIZE) {
+            selectedHotbarSlot = index;
+        }
+    }
+
+    public InventorySlot getSelectedSlot() {
+        return slots[selectedHotbarSlot];
+    }
+
+    public Items getEquippedItem() {
+        InventorySlot slot = getSelectedSlot();
+        return slot.isEmpty() ? null : slot.getItem();
+    }
+
+    /** Add items into the inventory, stacking where possible. */
     public boolean addItem(Items itemType, int quantity) {
-        int current = getItemCount(itemType);
-        int max = itemMaxSizes.getOrDefault(itemType, Integer.MAX_VALUE);
-        int toAdd = Math.min(quantity, max - current);
+        int remaining = quantity;
 
-        if (toAdd > 0) {
-            itemCounts.merge(itemType, toAdd, Integer::sum);
-            Log.debug("Added " + itemType + " x" + toAdd);
-            return true;
-        } else {
-            Log.debug("Cannot add " + itemType + ". Max reached.");
-            return false;
-        }
-    }
-
-    public int getItemCount(Items itemType) {
-        return itemCounts.getOrDefault(itemType, 0);
-    }
-
-    public int getTotalItemCount() {
-        return itemCounts.values().stream().mapToInt(Integer::intValue).sum();
-    }
-
-    public Map<Items, Integer> getItems() {
-        return itemCounts;
-    }
-
-    public void removeItem(Items item, int quantity) {
-        if (itemCounts.containsKey(item)) {
-            int currentCount = itemCounts.get(item);
-            if (currentCount >= quantity) {
-                itemCounts.put(item, currentCount - quantity);
-                Log.debug("Removed " + item + " x" + quantity);
-            } else {
-                Log.debug("Cannot remove " + item + ". Not enough in inventory.");
+        // Try stacking into existing slots
+        for (InventorySlot slot : slots) {
+            if (!slot.isEmpty() && slot.getItem() == itemType) {
+                int added = slot.addItems(remaining);
+                remaining -= added;
+                if (remaining <= 0) return true;
             }
-        } else {
-            Log.debug("Cannot remove " + item + ". Item not found in inventory.");
+        }
+
+        // Try empty slots
+        for (InventorySlot slot : slots) {
+            if (slot.isEmpty()) {
+                slot.setItem(itemType, 0);
+                int added = slot.addItems(remaining);
+                remaining -= added;
+                if (remaining <= 0) return true;
+            }
+        }
+
+        return remaining < quantity; // true if at least some were added
+    }
+
+    /** Get total count of a specific item across all slots. */
+    public int getItemCount(Items itemType) {
+        return Arrays.stream(slots)
+                .filter(s -> !s.isEmpty() && s.getItem() == itemType)
+                .mapToInt(InventorySlot::getQuantity)
+                .sum();
+    }
+
+    /** Get total count of all items. */
+    public int getTotalItemCount() {
+        return Arrays.stream(slots)
+                .filter(s -> !s.isEmpty())
+                .mapToInt(InventorySlot::getQuantity)
+                .sum();
+    }
+
+    /** Return a synthetic Map view of items (for compatibility). */
+    public Map<Items, Integer> getItems() {
+        Map<Items, Integer> result = new EnumMap<>(Items.class);
+        for (InventorySlot slot : slots) {
+            if (!slot.isEmpty()) {
+                result.merge(slot.getItem(), slot.getQuantity(), Integer::sum);
+            }
+        }
+        return result;
+    }
+
+    /** Remove a quantity of an item across slots. */
+    public void removeItem(Items itemType, int quantity) {
+        int remaining = quantity;
+        for (InventorySlot slot : slots) {
+            if (!slot.isEmpty() && slot.getItem() == itemType) {
+                int removed = slot.removeItems(remaining);
+                remaining -= removed;
+                if (remaining <= 0) break;
+            }
         }
     }
 
+    /** Clear inventory and return snapshot of items (for drops). */
+    public Map<Items, Integer> clearAndReturnItems() {
+        Map<Items, Integer> snapshot = getItems();
+        for (InventorySlot slot : slots) {
+            slot.clear();
+        }
+        return snapshot;
+    }
 }

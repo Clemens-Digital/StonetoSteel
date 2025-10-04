@@ -2,8 +2,11 @@ package io.github.anthonyclemens.GameObjects.SingleTileObjects;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.geom.Rectangle;
+import org.newdawn.slick.util.Log;
 
 import io.github.anthonyclemens.GameObjects.GameObject;
+import io.github.anthonyclemens.GameObjects.Items;
+import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
 import io.github.anthonyclemens.Rendering.SpriteManager;
 import io.github.anthonyclemens.states.Game;
@@ -29,7 +32,11 @@ public class SingleTileObject extends GameObject{
 
     @Override
     public void render(IsoRenderer r, int lodLevel) {
-        r.drawScaledTile(tileSheet,i,x,y,chunkX,chunkY);
+        if(this.hover){
+            r.drawScaledTile(tileSheet,i,x,y,chunkX,chunkY, new Color(0.7f, 0.7f, 0.7f, 1f));
+        }else{
+            r.drawScaledTile(tileSheet,i,x,y,chunkX,chunkY);
+        }
         if(Game.showDebug&&this.hitbox!=null&&r.getZoom()>=0.8f){
             r.getGraphics().setColor(Color.black);
             r.getGraphics().draw(hitbox);
@@ -44,5 +51,15 @@ public class SingleTileObject extends GameObject{
 
     @Override
     public void update(IsoRenderer r, int deltaTime) {}
+
+    @Override
+    public void onUse(Player player, Items item) {
+        Log.debug("OnUse not implemented for "+this.name);
+    }
+
+    @Override
+    public void onHit(Player player, Items item) {
+        Log.debug("OnHit not implemented for "+this.name);
+    }
 
 }

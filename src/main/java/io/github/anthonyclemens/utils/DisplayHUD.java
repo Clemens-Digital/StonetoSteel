@@ -4,7 +4,7 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 
-import io.github.anthonyclemens.GameObjects.SingleTileObjects.Items;
+import io.github.anthonyclemens.GameObjects.Items;
 import io.github.anthonyclemens.Logic.Calender;
 import io.github.anthonyclemens.Logic.DayNightCycle;
 import io.github.anthonyclemens.Player.Player;

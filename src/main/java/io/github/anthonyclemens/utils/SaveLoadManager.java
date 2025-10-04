@@ -27,7 +27,7 @@ import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.Camera;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
 import io.github.anthonyclemens.WorldGen.Chunk;
-import io.github.anthonyclemens.WorldGen.ChunkManager;
+import io.github.anthonyclemens.WorldGen.World;
 
 public class SaveLoadManager {
 
@@ -40,7 +40,7 @@ public class SaveLoadManager {
     private int playerHealth;
     private Inventory playerInventory;
 
-    public void saveGame(String folderPath, DayNightCycle env, ChunkManager chunkManager, Camera camera, Player player) {
+    public void saveGame(String folderPath, DayNightCycle env, World chunkManager, Camera camera, Player player) {
         Path saveRoot = Paths.get(folderPath);
         try {
             Files.createDirectories(saveRoot);
@@ -66,7 +66,7 @@ public class SaveLoadManager {
         Log.debug("Save completed at " + folderPath + " total size: "+formatSize((int)getFolderSize(saveRoot.toFile())));
     }
 
-    private void saveChunkRegions(ChunkManager chunkManager, Path regionFolder) {
+    private void saveChunkRegions(World chunkManager, Path regionFolder) {
         try {
             Files.createDirectories(regionFolder);
         } catch (IOException e) {
@@ -141,7 +141,7 @@ public class SaveLoadManager {
             int seed = (int) seedIn.readObject();
 
             // Load chunks from dirty regions
-            ChunkManager cm = new ChunkManager(seed);
+            World cm = new World(seed);
             loadChunkRegions(cm, saveRoot.resolve("regions"));
             Log.debug("Loaded ChunkManager");
 
@@ -153,7 +153,7 @@ public class SaveLoadManager {
         }
     }
 
-    private void loadChunkRegions(ChunkManager chunkManager, Path regionFolder) {
+    private void loadChunkRegions(World chunkManager, Path regionFolder) {
         try (DirectoryStream<Path> files = Files.newDirectoryStream(regionFolder, "*.dat")) {
             for (Path regionFile : files) {
                 try (ObjectInputStream ois = openGzippedInput(regionFile)) {

@@ -1,14 +1,17 @@
 package io.github.anthonyclemens.utils;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.util.Log;
 
 import io.github.anthonyclemens.GameObjects.GameObject;
+import io.github.anthonyclemens.GameObjects.Items;
 import io.github.anthonyclemens.GameObjects.Mobs.Mob;
 import io.github.anthonyclemens.GameObjects.SingleTileObjects.Item;
-import io.github.anthonyclemens.GameObjects.SingleTileObjects.Items;
 import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.WorldGen.Chunk;
 import io.github.anthonyclemens.states.Game;
@@ -19,71 +22,92 @@ public class CollisionHandler {
             Log.debug("Current chunk is null, skipping collision check.");
             return;
         }
-        List<GameObject> gameObjects = currentChunk.getGameObjects();
+
+        final List<GameObject> gameObjects = currentChunk.getGameObjects();
         if (gameObjects == null || gameObjects.isEmpty()) {
             return;
         }
-        for (GameObject gob : gameObjects) {
-            if (gob.getHitbox()==null) return;
+        List<UUID> toRemove = new ArrayList<>();
+
+        Iterator<GameObject> it = gameObjects.iterator();
+        while (it.hasNext()) {
+            GameObject gob;
+            try {
+                gob = it.next();
+            } catch (Exception e) {
+                return;
+            }
+
+            if (gob.getHitbox() == null) {
+                continue; // skip this object, don't exit the whole method
+            }
+
             if (gob.getHitbox().intersects(player.getHitbox())) {
-                if(gob instanceof Mob){
-                    switch(gob.getName()){
-                        case "zombie" -> player.subtractHealth(currentChunk.getRandom().nextInt(6)+5);
-                        case "spider" -> player.subtractHealth(currentChunk.getRandom().nextInt(10)+2);
+                // --- Mob collision ---
+                if (gob instanceof Mob) {
+                    switch (gob.getName()) {
+                        case "zombie" -> player.subtractHealth(currentChunk.getRandom().nextInt(6) + 5);
+                        case "spider" -> player.subtractHealth(currentChunk.getRandom().nextInt(10) + 2);
                     }
-                    Log.debug("Touching a "+gob.getName());
-                    return;
+                    Log.debug("Touching a " + gob.getName());
+                    return; // stop after first mob collision
                 }
-                if(!gob.isSolid()) return;
+
+                if (!gob.isSolid()) {
+                    continue; // skip non-solid objects
+                }
+
                 Rectangle playerHit = player.getHitbox();
                 Rectangle objectHit = gob.getHitbox();
 
-                // Manually compute the intersection rectangle
+                // Compute intersection rectangle
                 float intersectX = Math.max(playerHit.getX(), objectHit.getX());
                 float intersectY = Math.max(playerHit.getY(), objectHit.getY());
                 float intersectWidth = Math.min(playerHit.getX() + playerHit.getWidth(), objectHit.getX() + objectHit.getWidth()) - intersectX;
                 float intersectHeight = Math.min(playerHit.getY() + playerHit.getHeight(), objectHit.getY() + objectHit.getHeight()) - intersectY;
+
                 if (intersectWidth > 0 && intersectHeight > 0) {
+                    // --- Item pickup ---
                     if (gob.getName().startsWith("ITEM_")) {
                         Items itemType = Items.valueOf(gob.getName());
-                        if(player.getPlayerInventory().addItem(itemType, ((Item) gob).getQuantity())){
-                            currentChunk.removeGameObject(gob.getUUID());
+                        if (player.getPlayerInventory().addItem(itemType, ((Item) gob).getQuantity())) {
+                            it.remove();
                         }
-                        return;
+                        return; // stop after picking up item
                     }
-                    // Compute centers from hitboxes
+
+                    // --- Collision resolution ---
                     float playerCenterX = playerHit.getX() + playerHit.getWidth() / 2;
                     float playerCenterY = playerHit.getY() + playerHit.getHeight() / 2;
                     float objectCenterX = objectHit.getX() + objectHit.getWidth() / 2;
                     float objectCenterY = objectHit.getY() + objectHit.getHeight() / 2;
+
                     float dx = player.getX() - player.getPreviousX();
                     float dy = player.getY() - player.getPreviousY();
+
                     if (intersectWidth < intersectHeight) {
-                        // Horizontal collision resolution
+                        // Horizontal collision
                         if (playerCenterX < objectCenterX) {
-                            // Player approaches from the left, push left.
                             player.setX(player.getX() - intersectWidth);
                         } else {
-                            // Player approaches from the right, push right.
                             player.setX(player.getX() + intersectWidth);
                         }
-                        // Simulate a bounce: reverse horizontal movement component.
                         player.setPreviousX(player.getX() + dx);
                     } else {
-                        // Vertical collision resolution
+                        // Vertical collision
                         if (playerCenterY < objectCenterY) {
-                            // Player approaches from above, push upward.
                             player.setY(player.getY() - intersectHeight);
                         } else {
-                            // Player approaches from below, push downward.
                             player.setY(player.getY() + intersectHeight);
                         }
-                        // Simulate a bounce: reverse vertical movement component.
                         player.setPreviousY(player.getY() + dy);
                     }
-                    switch(gob.getName()){
+
+                    // Special object effects
+                    switch (gob.getName()) {
                         case "cactus" -> player.subtractHealth(10);
                     }
+
                     if (Game.showDebug) {
                         Log.debug("Collision detected with game object: " + gob.getName());
                     }

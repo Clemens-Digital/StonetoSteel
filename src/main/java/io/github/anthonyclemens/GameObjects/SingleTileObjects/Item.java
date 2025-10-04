@@ -4,6 +4,7 @@ import org.lwjgl.Sys;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.geom.Rectangle;
 
+import io.github.anthonyclemens.GameObjects.Items;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
 import io.github.anthonyclemens.states.Game;
 
@@ -56,7 +57,11 @@ public class Item extends SingleTileObject{
                 r.getGraphics().draw(hitbox);
             }
         }
-        r.drawTileIso(tileSheet, i, renderX, renderY);
+        if(this.hover){
+            r.drawTileIso(tileSheet, i, renderX, renderY, new Color(0.7f, 0.7f, 0.7f, 1f));
+        }else{
+            r.drawTileIso(tileSheet, i, renderX, renderY);
+        }
     }
 
     @Override

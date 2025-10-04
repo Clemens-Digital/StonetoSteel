@@ -7,7 +7,7 @@ import io.github.anthonyclemens.Logic.DayNightCycle;
 import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.Camera;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
-import io.github.anthonyclemens.WorldGen.ChunkManager;
+import io.github.anthonyclemens.WorldGen.World;
 import io.github.anthonyclemens.states.Game;
 
 
@@ -91,7 +91,7 @@ public class SharedData {
     public static IsoRenderer getRenderer() { return gameState != null ? gameState.getRenderer() : null; }
     public static Player getPlayer() { return gameState != null ? gameState.getPlayer() : null; }
     public static DayNightCycle getDayNightCycle() { return gameState != null ? gameState.getEnv() : null; }
-    public static ChunkManager getChunkManager() { return gameState != null ? gameState.getChunkManager() : null; }
+    public static World getChunkManager() { return gameState != null ? gameState.getChunkManager() : null; }
     public static Camera getCamera() { return gameState != null ? gameState.getCamera() : null; }
     public static String getIPAddress() { return ipAddress; }
     public static void setIPAddress(String newIP) { ipAddress=newIP; }

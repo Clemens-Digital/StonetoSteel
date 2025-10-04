@@ -4,6 +4,9 @@ import java.util.Random;
 
 import org.newdawn.slick.Color;
 
+import io.github.anthonyclemens.GameObjects.ItemType;
+import io.github.anthonyclemens.GameObjects.Items;
+import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
 import io.github.anthonyclemens.Rendering.SpriteManager;
 import io.github.anthonyclemens.WorldGen.Chunk;
@@ -14,7 +17,7 @@ public class Tree extends SingleTileObject{
     private long shakeDuration = 500; // When shaking should end
     private transient long lastDamageTime = 0; // Timestamp of last time damage was taken (milliseconds)
     private transient long endShakeTime = 0; // Timestamp when shaking should end
-    private final long damageCooldown = 500; // Cooldown time between damage in milliseconds
+    private long damageCooldown = 2000; // Cooldown time between damage in milliseconds
     private final int shakeAggression; // How much the tree shakes when hit
     private transient float offsetX = 0; // Offset for shaking effect
     private transient float offsetY = 0; // Offset for shaking effect
@@ -32,7 +35,7 @@ public class Tree extends SingleTileObject{
             this.i = (byte) rand.nextInt(12);
             this.health = 40;
             this.shakeDuration = 500;
-            this.shakeAggression = 6;
+            this.shakeAggression = 4;
             this.droppedItem.setQuantity(6 + rand.nextInt(5));
         } else {
             this.name = "smallTree";
@@ -59,7 +62,7 @@ public class Tree extends SingleTileObject{
             this.i = (byte) rand.nextInt(12);
             this.health = 40;
             this.shakeDuration = 500;
-            this.shakeAggression = 6;
+            this.shakeAggression = 4;
             this.droppedItem.setQuantity(6 + rand.nextInt(5));
         } else {
             this.name = "smallTree";
@@ -85,7 +88,7 @@ public class Tree extends SingleTileObject{
         this.i = (byte) rand.nextInt(16);
         this.health = 50;
         this.shakeDuration = 500;
-        this.shakeAggression = 6;
+        this.shakeAggression = 4;
         this.droppedItem.setQuantity(8 + rand.nextInt(5));
         this.maxHealth = this.health;
         this.tileWidth = SpriteManager.getSpriteWidth(tileSheet);
@@ -97,7 +100,11 @@ public class Tree extends SingleTileObject{
     public void render(IsoRenderer r, int lodLevel) {
         renderX = r.calculateIsoX(x, y, chunkX, chunkY) + offsetX*r.getZoom();
         renderY = r.calculateIsoY(x, y, chunkX, chunkY) + offsetY*r.getZoom();
-        r.drawTileIso(tileSheet, i, renderX, renderY);
+        if(this.hover){
+            r.drawTileIso(tileSheet, i, renderX, renderY, new Color(0.7f, 0.7f, 0.7f, 1f));
+        }else{
+            r.drawTileIso(tileSheet, i, renderX, renderY);
+        }
         if(Game.showDebug&&this.hitbox!=null&&r.getZoom()>=0.8f){
             r.getGraphics().setColor(Color.black);
             r.getGraphics().draw(hitbox);
@@ -131,6 +138,17 @@ public class Tree extends SingleTileObject{
         endShakeTime = now + shakeDuration;
         lastDamageTime = now;
         Game.gameObjectSoundBox.playRandomSound(this.name+"HitSounds");
+    }
+
+    @Override
+    public void onHit(Player player, Items item) {
+        damageCooldown = 2000; // Tool-less hits are 2s delay
+        if(item.getItemType() == ItemType.AXE){
+            removeHealth(item.getDamage());
+            damageCooldown = (long) (1000 / item.getSpeed());
+        }else{
+            removeHealth(5);
+        }
     }
 
 }
