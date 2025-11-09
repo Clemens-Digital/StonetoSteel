@@ -10,6 +10,7 @@ import com.codedisaster.steamworks.SteamAPI;
 import com.codedisaster.steamworks.SteamException;
 
 import io.github.anthonyclemens.Rendering.FontManager;
+import io.github.anthonyclemens.states.BootScreen;
 import io.github.anthonyclemens.states.ControlSettings;
 import io.github.anthonyclemens.states.Credits;
 import io.github.anthonyclemens.states.Game;
@@ -74,6 +75,7 @@ public class Main extends StateBasedGame{
 
     @Override
     public void initStatesList(GameContainer container) throws SlickException {
+        addState(new BootScreen());
         addState(new MainMenu());
         addState(new NewGame());
         addState(new SettingsMenu());
@@ -98,6 +100,7 @@ public class Main extends StateBasedGame{
     private static void addFonts(){
         FontManager.addFont("MedievalTimes", "fonts/MedievalTimes.ttf");
         FontManager.addFont("Roboto", "fonts/Roboto-Black.ttf");
+        FontManager.addFont("Basis33", "fonts/basis33.ttf");
     }
 
 }
