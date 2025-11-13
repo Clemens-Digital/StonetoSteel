@@ -166,14 +166,13 @@ public class MultiTileObject extends GameObject{
         hitbox.setBounds(minScreenX, minScreenY, maxScreenX - minScreenX, maxScreenY - minScreenY);
     }
 
-    Comparator<TileBlock> sortByYThenX = (b, a) -> {
-        int cmpY = Integer.compare(b.getY(), a.getY());
-        return (cmpY != 0) ? cmpY : Integer.compare(b.getX(), a.getX());
-    };
-
     private void sortBlocks() {
-        this.sortedBlocks = blocks.stream().sorted(sortByYThenX).toList();
+        this.sortedBlocks = blocks.stream()
+            .sorted(Comparator.comparingInt(TileBlock::getY)
+                            .thenComparingInt(TileBlock::getX))
+            .toList();
     }
+
 
     @Override
     public void onUse(Player player, Items item) {}

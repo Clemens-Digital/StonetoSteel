@@ -4,6 +4,7 @@ import java.util.Random;
 
 import org.newdawn.slick.Color;
 
+import io.github.anthonyclemens.GameObjects.ItemType;
 import io.github.anthonyclemens.GameObjects.Items;
 import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
@@ -15,7 +16,8 @@ public class BerryBush extends SingleTileObject{
     private final long shakeDuration = 250; // When shaking should end
     private transient long lastDamageTime = 0; // Timestamp of last time damage was taken (milliseconds)
     private transient long endShakeTime = 0; // Timestamp when shaking should end
-    private long damageCooldown = 500; // Cooldown time between damage in milliseconds
+    private final static long DAMAGE_COOLDOWN_DEFAULT = 500;
+    private long damageCooldown = DAMAGE_COOLDOWN_DEFAULT; // Cooldown time between damage in milliseconds
     private final int shakeAggression = 3; // How much the grass shakes when hit
     private transient float offsetX = 0; // Offset for shaking effect
     private transient float offsetY = 0; // Offset for shaking effect
@@ -79,6 +81,12 @@ public class BerryBush extends SingleTileObject{
 
     @Override
     public void onHit(Player player, Items item){
-        removeHealth(5);
+        if(item.getItemType()==ItemType.AXE){
+            damageCooldown = (long)((float)DAMAGE_COOLDOWN_DEFAULT/item.getSpeed());
+            this.removeHealth(item.getDamage());
+        }else{
+            damageCooldown = DAMAGE_COOLDOWN_DEFAULT;
+            this.removeHealth(5);
+        }
     }
 }

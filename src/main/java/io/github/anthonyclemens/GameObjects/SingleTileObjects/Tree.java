@@ -17,7 +17,8 @@ public class Tree extends SingleTileObject{
     private long shakeDuration = 500; // When shaking should end
     private transient long lastDamageTime = 0; // Timestamp of last time damage was taken (milliseconds)
     private transient long endShakeTime = 0; // Timestamp when shaking should end
-    private long damageCooldown = 2000; // Cooldown time between damage in milliseconds
+    private final static long DAMAGE_COOLDOWN_DEFAULT = 1000;
+    private long damageCooldown = DAMAGE_COOLDOWN_DEFAULT; // Cooldown time between damage in milliseconds
     private final int shakeAggression; // How much the tree shakes when hit
     private transient float offsetX = 0; // Offset for shaking effect
     private transient float offsetY = 0; // Offset for shaking effect
@@ -144,10 +145,11 @@ public class Tree extends SingleTileObject{
     public void onHit(Player player, Items item) {
         damageCooldown = 2000; // Tool-less hits are 2s delay
         if(item.getItemType() == ItemType.AXE){
+            damageCooldown = (long) ((float)DAMAGE_COOLDOWN_DEFAULT / item.getSpeed());
             removeHealth(item.getDamage());
-            damageCooldown = (long) (1000 / item.getSpeed());
         }else{
-            removeHealth(5);
+            damageCooldown = DAMAGE_COOLDOWN_DEFAULT;
+            removeHealth(1);
         }
     }
 

@@ -17,7 +17,8 @@ public class Grass extends SingleTileObject{
     private final long shakeDuration; // When shaking should end
     private transient long lastDamageTime = 0; // Timestamp of last time damage was taken (milliseconds)
     private transient long endShakeTime = 0; // Timestamp when shaking should end
-    private long damageCooldown = 1000; // Cooldown time between damage in milliseconds
+    private final static long DAMAGE_COOLDOWN_DEFAULT = 1000;
+    private long damageCooldown = DAMAGE_COOLDOWN_DEFAULT; // Cooldown time between damage in milliseconds
     private final int shakeAggression; // How much the grass shakes when hit
     private transient float offsetX = 0; // Offset for shaking effect
     private transient float offsetY = 0; // Offset for shaking effect
@@ -88,11 +89,11 @@ public class Grass extends SingleTileObject{
 
     @Override
     public void onHit(Player player, Items item){
-        damageCooldown = 1000;
         if(item.getItemType() == ItemType.HOE){
+            damageCooldown = (long) ((float)DAMAGE_COOLDOWN_DEFAULT / item.getSpeed());
             removeHealth(item.getDamage());
-            damageCooldown = (long) (500 / item.getSpeed());
         }else{
+            damageCooldown = DAMAGE_COOLDOWN_DEFAULT;
             removeHealth(1);
         }
     }

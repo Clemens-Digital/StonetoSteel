@@ -3,7 +3,9 @@ package io.github.anthonyclemens.GameObjects.Mobs;
 import java.util.List;
 import java.util.Random;
 
+import io.github.anthonyclemens.GameObjects.Items;
 import io.github.anthonyclemens.GameObjects.SingleTileObjects.Item;
+import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
 import io.github.anthonyclemens.Rendering.SpriteManager;
 import io.github.anthonyclemens.WorldGen.Biome;
@@ -58,5 +60,10 @@ public class Fish extends Mob{
         }
         lastDamageTime = now;
         hurtFlashEndTime = now + HURT_FLASH_DURATION_MS; // Set flash timer
+    }
+
+    @Override
+    public void onHit(Player player, Items item){
+        this.removeHealth(item.getDamage());
     }
 }

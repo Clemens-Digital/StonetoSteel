@@ -64,6 +64,12 @@ public class Credits extends BasicGameState{
         // Load Background Image
         bgImage = new Image(AssetLoader.loadSingleAssetFromFile(texturePack, "backgroundImage"));
         // Credits
+        creditSections.put("STONE TO STEEL", List.of(
+            "Version "+getClass().getPackage().getImplementationVersion(),
+            "A game by Clemens Digital",
+            "www.clemensdigital.com"
+        ));
+
         creditSections.put("GAME DEVELOPMENT", List.of(
             "IsoRender Engine - Anthony Clemens",
             "Game Mechanics - Anthony Clemens",
@@ -153,8 +159,7 @@ public class Credits extends BasicGameState{
         if (backButton.isClicked()) {
             game.enterState(GameStates.MAIN_MENU.getID());
         }
-        float multiplier = 0.001f;
-        if(input.isMouseButtonDown(Input.MOUSE_LEFT_BUTTON)) multiplier = 0.01f;
+        float multiplier = (input.isMouseButtonDown(Input.MOUSE_LEFT_BUTTON)||input.isKeyDown(Input.KEY_SPACE))? 0.01f : 0.001f;
         scrollY -= SCROLL_SPEED * delta * multiplier;
         SteamAPI.runCallbacks();
     }

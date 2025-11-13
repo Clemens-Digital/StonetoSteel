@@ -44,6 +44,7 @@ public class DebugGUI {
         String playerEquippedItem = (player.getEquippedItem() != null) ? player.getEquippedItem().name() : "None";
 
         String[] debugStrings = new String[] {
+            "Version: " + getClass().getPackage().getImplementationVersion(),
             "FPS: " + container.getFPS() + " FPS",
             "Memory Usage: " + getMemUsage(),
             "Tile: " + tile,

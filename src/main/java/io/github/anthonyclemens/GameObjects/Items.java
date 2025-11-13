@@ -20,9 +20,9 @@ public enum Items {
     private final int damage;
     private final float speed;
 
-    // Constructor for items
+    // Constructor for items with a default damage and speed of 1
     Items(String spriteSheet, int spriteIndex, ItemType itemType) {
-        this(spriteSheet, spriteIndex, itemType, 0, 0f);
+        this(spriteSheet, spriteIndex, itemType, 1, 1f);
     }
 
     // Constructor for weapons/tools

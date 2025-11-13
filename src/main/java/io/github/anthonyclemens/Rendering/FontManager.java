@@ -11,6 +11,7 @@ import org.newdawn.slick.util.Log;
 import org.newdawn.slick.util.ResourceLoader;
 
 public class FontManager {
+    private static final int MAX_CACHE_FONTS = 20;
     private FontManager() {}
     private static final HashMap<String, String> loadableFonts = new HashMap<>();
     private static final HashMap<String, TrueTypeFont> loadedFonts = new HashMap<>();
@@ -27,6 +28,10 @@ public class FontManager {
             if(path == null){
                 Log.error("Font not found: " + name);
                 return null;
+            }
+            if(loadedFonts.size() >= MAX_CACHE_FONTS){
+                loadedFonts.remove(loadedFonts.keySet().iterator().next());
+                Log.debug("Font cache full. Removed oldest cached font.");
             }
             loadFont(name, path, size);
         }

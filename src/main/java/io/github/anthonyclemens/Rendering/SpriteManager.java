@@ -12,6 +12,7 @@ import org.newdawn.slick.util.Log;
  * Provides utility methods for sprite dimensions.
  */
 public class SpriteManager {
+    public static boolean debugMode = false;
     private SpriteManager() {}
     private static final HashMap<String, SpriteSheet> spriteSheets = new HashMap<>();
 
@@ -27,7 +28,7 @@ public class SpriteManager {
             SpriteSheet spriteSheet = new SpriteSheet(path, tileWidth, tileHeight);
             spriteSheets.put(name, spriteSheet);
         } catch (SlickException e) {
-            Log.error("Error loading sprite sheet: " + e.getMessage());
+            if(debugMode) Log.error("Error loading sprite sheet: " + e.getMessage());
         }
     }
 
@@ -43,7 +44,7 @@ public class SpriteManager {
             }
             spriteSheets.remove(name);
         } catch (Exception e) {
-            Log.error("Error removing sprite sheet: " + e.getMessage());
+            if(debugMode) Log.error("Error removing sprite sheet: " + e.getMessage());
         }
     }
 
@@ -54,7 +55,7 @@ public class SpriteManager {
      */
     public static SpriteSheet getSpriteSheet(String name) {
         if(spriteSheets.get(name) == null){
-            Log.warn("Sprite sheet not found: " + name);
+            if(debugMode) Log.warn("Sprite sheet not found: " + name);
             return null;
         }
         return spriteSheets.get(name);
@@ -63,7 +64,7 @@ public class SpriteManager {
     public static Animation getAnimation(String name, int sx, int sy, int ex, int ey, int frameDuration){
         SpriteSheet spriteSheet = getSpriteSheet(name);
         if (spriteSheet == null) {
-            Log.error("Cannot create animation, sprite sheet is null: " + name);
+            if(debugMode) Log.error("Cannot create animation, sprite sheet is null: " + name);
             return null;
         }
         return new Animation(spriteSheet, sx, sy, ex, ey, false, frameDuration, true);
@@ -77,7 +78,7 @@ public class SpriteManager {
     public static int getSpriteWidth(String name) {
         SpriteSheet spriteSheet = getSpriteSheet(name);
         if (spriteSheet == null) {
-            Log.error("Cannot get sprite width, sprite sheet is null: " + name);
+            if(debugMode) Log.error("Cannot get sprite width, sprite sheet is null: " + name);
             return -1;
         }
         return spriteSheet.getWidth()/spriteSheet.getHorizontalCount();
@@ -91,7 +92,7 @@ public class SpriteManager {
     public static int getSpriteHeight(String name) {
         SpriteSheet spriteSheet = getSpriteSheet(name);
         if (spriteSheet == null) {
-            Log.error("Cannot get sprite height, sprite sheet is null: " + name);
+            if(debugMode) Log.error("Cannot get sprite height, sprite sheet is null: " + name);
             return -1;
         }
         return spriteSheet.getHeight()/spriteSheet.getVerticalCount();
