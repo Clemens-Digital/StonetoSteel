@@ -54,7 +54,7 @@ public class SettingsMenu extends BasicGameState{
         texturePack = settings.getTexturePack();
         soundPack = settings.getSoundPack();
         // Set background image
-        backgroundImage = new Image(AssetLoader.loadSingleAssetFromFile(texturePack, "backgroundImage"), false, Image.FILTER_NEAREST);
+        backgroundImage = new Image(AssetLoader.loadSingleAssetFromFile(texturePack, "backgroundImage"));
         // Create title banner
         Image bannerImage = new Image(AssetLoader.loadSingleAssetFromFile(texturePack, "bannerImage"), false, Image.FILTER_NEAREST);
         titleBanner = new Banner(bannerImage, TITLE_STRING, FontManager.getFont(MAIN_FONT, MAIN_FONT_SIZE), TwoDimensionMath.getMiddleX(720, container.getWidth()), 10, 720, 251);

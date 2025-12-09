@@ -1,5 +1,8 @@
 package io.github.anthonyclemens.Rendering;
 
+import java.util.Objects;
+import java.util.stream.IntStream;
+
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
@@ -27,7 +30,6 @@ public class IsoRenderer {
     private final World chunkManager; // Reference to the chunk manager
     private int[] visibleChunks; // Array to store the visible chunks
     private boolean firstFrame = true; // Flag to check if it's the first frame
-    private final GameContainer container; // Reference to the game container
     private int spriteCols = 0;
     private int spriteRows = 0;
     private Image[] tileCache = null;
@@ -35,11 +37,10 @@ public class IsoRenderer {
     private boolean isSunUp = true;
     private final FastGraphics fastGraphics = new FastGraphics();
 
-    public IsoRenderer(float zoom, String worldTileSheet, World chunkManager, GameContainer container){
+    public IsoRenderer(float zoom, String worldTileSheet, World chunkManager){
         this.zoom = zoom;
         this.worldTileSheet = SpriteManager.getSpriteSheet(worldTileSheet);
         this.chunkManager = chunkManager;
-        this.container = container;
         if(this.worldTileSheet == null) return;
         this.spriteCols = this.worldTileSheet.getHorizontalCount();
         this.spriteRows = this.worldTileSheet.getVerticalCount();
@@ -89,51 +90,36 @@ public class IsoRenderer {
 
         // First pass: tiles
         worldTileSheet.startUse();
-        for (int x = visibleChunks[0]; x <= visibleChunks[2]; x++) {
-            for (int y = visibleChunks[1]; y <= visibleChunks[3]; y++) {
-                renderChunk(x, y);
-            }
-        }
+        IntStream.rangeClosed(visibleChunks[0], visibleChunks[2])
+            .forEach(x -> IntStream.rangeClosed(visibleChunks[1], visibleChunks[3])
+                .forEach(y -> renderChunk(x, y)));
         worldTileSheet.endUse();
 
         // Second pass: chunk objects
-        for (int x = visibleChunks[0]; x <= visibleChunks[2]; x++) {
-            for (int y = visibleChunks[1]; y <= visibleChunks[3]; y++) {
-                Chunk c = chunkManager.getChunk(x, y);
-                if (c != null) c.render(this, lodLevel);
-            }
-        }
+        IntStream.rangeClosed(visibleChunks[0], visibleChunks[2])
+            .forEach(x -> IntStream.rangeClosed(visibleChunks[1], visibleChunks[3])
+                .mapToObj(y -> chunkManager.getChunk(x, y))
+                .filter(Objects::nonNull)
+                .forEach(c -> c.render(this, lodLevel)));
     }
 
 
-    public void updateChunksAroundPlayer(int deltaTime, Player player, DayNightCycle env) {
-        if(player.getPlayerLocation()==null) return;
-        int playerChunkX = player.getPlayerLocation()[2];
-        int playerChunkY = player.getPlayerLocation()[3];
-
-        for (int x = playerChunkX - renderDistance; x <= playerChunkX + renderDistance; x++) {
-            for (int y = playerChunkY - renderDistance; y <= playerChunkY + renderDistance; y++) {
-                Chunk chunk = chunkManager.getChunk(x, y);
-                if (chunk != null) {
-                    chunk.update(this, deltaTime, player, env);
-                }
-            }
-        }
+    public void updateChunksAroundPlayer(int deltaTime, Player player, DayNightCycle env, int playerChunkX, int playerChunkY) {
+        IntStream.rangeClosed(playerChunkX - renderDistance, playerChunkX + renderDistance)
+        .parallel()
+        .forEach(x -> IntStream.rangeClosed(playerChunkY - renderDistance, playerChunkY + renderDistance)
+            .mapToObj(y -> chunkManager.getChunk(x, y))
+            .filter(Objects::nonNull)
+            .forEach(chunk -> chunk.update(this, deltaTime, player, env)));
     }
 
-    public void calculateHitbox(IsoRenderer renderer, Player player) {
-        if(player.getPlayerLocation()==null) return;
-        int playerChunkX = player.getPlayerLocation()[2];
-        int playerChunkY = player.getPlayerLocation()[3];
-
-        for (int x = playerChunkX - renderDistance; x <= playerChunkX + renderDistance; x++) {
-            for (int y = playerChunkY - renderDistance; y <= playerChunkY + renderDistance; y++) {
-                Chunk chunk = chunkManager.getChunk(x, y);
-                if (chunk != null) {
-                    chunk.calculateHitbox(renderer);
-                }
-            }
-        }
+    public void calculateHitbox(IsoRenderer renderer, int playerChunkX, int playerChunkY) {
+        IntStream.rangeClosed(playerChunkX - renderDistance, playerChunkX + renderDistance)
+        .parallel()
+        .forEach(x -> IntStream.rangeClosed(playerChunkY - renderDistance, playerChunkY + renderDistance)
+            .mapToObj(y -> chunkManager.getChunk(x, y))
+            .filter(Objects::nonNull)
+            .forEach(chunk -> chunk.calculateHitbox(renderer)));
     }
 
     private void renderChunk(int chunkX, int chunkY) {
@@ -159,21 +145,21 @@ public class IsoRenderer {
         int preCompX = halfTileWidth + (chunkX - chunkY) * World.CHUNK_SIZE * halfTileWidth;
         int preCompY = quarterTileHeight + (chunkX + chunkY) * World.CHUNK_SIZE * quarterTileHeight;
 
-        for (int blockY = 0; blockY < lodSize; blockY++) {
-            for (int blockX = 0; blockX < lodSize; blockX++) {
+        IntStream.range(0, lodSize).forEach(blockY ->
+            IntStream.range(0, lodSize).forEach(blockX -> {
                 int tileType = chunk.getLODTile(lodLevel, blockX, blockY);
                 Image img = spriteFor(tileType);
                 if (img == null) {
                     Log.warn("Missing sprite for tileType " + tileType + " in chunk (" + chunkX + "," + chunkY + ")");
-                    continue;
+                    return;
                 }
 
                 float isoX = calculateFastIsoX(blockX * blockSize, blockY * blockSize, halfTileWidth, preCompX);
                 float isoY = calculateFastIsoY(blockX * blockSize, blockY * blockSize, quarterTileHeight, preCompY);
 
                 drawScaledIsoImage(img, isoX, isoY, tileRenderSize, tileRenderSize);
-            }
-        }
+            })
+        );
     }
 
 

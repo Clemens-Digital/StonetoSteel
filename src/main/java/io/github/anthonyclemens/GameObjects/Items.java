@@ -6,7 +6,7 @@ public enum Items {
     ITEM_CACTUS("main", 9, ItemType.MISC),
     ITEM_FISH("fish", 0, ItemType.FOOD),
     ITEM_SEED("items", 3, ItemType.SEED),
-    ITEM_ZOMBIE_FLESH("items", 0, ItemType.FOOD),
+    ITEM_ZOMBIE_FLESH("items", 5, ItemType.FOOD),
     ITEM_BERRIES("items", 4, ItemType.FOOD),
     ITEM_STRING("items", 0, ItemType.MATERIAL),
     ITEM_BONES("items", 2, ItemType.MATERIAL),

@@ -11,7 +11,9 @@ public enum Achievement {
     // Resource Gathering Achievements
     CHOP_1_TREE(AchievementType.TREE_CHOPPING, "I've played these games before", "Chop down 1 tree", 1),
     CHOP_10_TREES(AchievementType.TREE_CHOPPING, "Lumberjack Apprentice", "Chop down 10 trees", 10),
-    CHOP_50_TREES(AchievementType.TREE_CHOPPING, "Lumberjack Journeyman", "Chop down 50 trees", 50);
+    CHOP_50_TREES(AchievementType.TREE_CHOPPING, "Lumberjack Journeyman", "Chop down 50 trees", 50),
+    // Survival Achievements
+    SURVIVE_1_DAY(AchievementType.SURVIVE, "This wasn't a dream?", "Survive 1 day");
 
 
 
@@ -25,7 +27,7 @@ public enum Achievement {
     Achievement(AchievementType achievementType, String name, String description) {
         this.name = name;
         this.description = description;
-        this.goalSteps = 0;
+        this.goalSteps = 1;
         this.achievementType = achievementType;
     }
 
@@ -59,7 +61,11 @@ public enum Achievement {
     }
 
     public void incrementStep() {
-        currentStep++;
+        if(this.currentStep<this.goalSteps){
+            currentStep++;
+        }else{
+            return;
+        }
         Log.debug("Incrementing "+this.name+", progress "+this.currentStep+"/"+this.goalSteps);
         if(currentStep >= goalSteps) {
             isUnlocked = true;

@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.util.Log;
 
 import io.github.anthonyclemens.Achievements.Achievement;
@@ -121,7 +120,7 @@ public class SaveLoadManager {
         }
     }
 
-    public void loadGame(String folderPath, GameContainer container) {
+    public void loadGame(String folderPath) {
         Path saveRoot = Paths.get(folderPath);
 
         try (ObjectInputStream envIn = openGzippedInput(saveRoot.resolve("environment.dat"));
@@ -149,7 +148,7 @@ public class SaveLoadManager {
             loadChunkRegions(cm, saveRoot.resolve("regions"));
             Log.debug("Loaded ChunkManager");
 
-            this.loadedRenderer = new IsoRenderer(1f, "main", cm, container);
+            this.loadedRenderer = new IsoRenderer(1f, "main", cm);
             Log.debug("Loaded IsoRenderer");
 
         } catch (IOException | ClassNotFoundException e) {

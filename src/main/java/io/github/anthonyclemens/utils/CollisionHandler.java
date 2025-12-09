@@ -1,9 +1,7 @@
 package io.github.anthonyclemens.utils;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.util.Log;
@@ -27,7 +25,6 @@ public class CollisionHandler {
         if (gameObjects == null || gameObjects.isEmpty()) {
             return;
         }
-        List<UUID> toRemove = new ArrayList<>();
 
         Iterator<GameObject> it = gameObjects.iterator();
         while (it.hasNext()) {
@@ -133,7 +130,7 @@ public class CollisionHandler {
             if (gob != mob && gob.getHitbox().intersects(mob.getHitbox())) {
                 Rectangle mobHit = mob.getHitbox();
                 Rectangle otherHit = gob.getHitbox();
-                
+
                 // Manually compute the intersection rectangle
                 float intersectX = Math.max(otherHit.getX(), mobHit.getX());
                 float intersectY = Math.max(otherHit.getY(), mobHit.getY());

@@ -11,6 +11,7 @@ import io.github.anthonyclemens.Achievements.AchievementNotification;
 import io.github.anthonyclemens.GameObjects.Items;
 import io.github.anthonyclemens.Logic.Calender;
 import io.github.anthonyclemens.Logic.DayNightCycle;
+import io.github.anthonyclemens.Math.TwoDimensionMath;
 import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.SpriteManager;
 
@@ -35,9 +36,9 @@ public class DisplayHUD {
         g.drawString(player.getPlayerInventory().getItemCount(Items.ITEM_BERRIES)+ "x", width - 70f + 32, startY+136f);
         SpriteManager.getSpriteSheet("items").getSprite(2, 0).draw(width-70f, startY+160f, 2);
         g.drawString(player.getPlayerInventory().getItemCount(Items.ITEM_BONES)+ "x", width - 70f + 32, startY+168f);
-        
+
         for (AchievementNotification n : player.getAchievementManager().getNotifications()) {
-            n.setX(width/2f);
+            n.setX(TwoDimensionMath.getMiddleX(n.getWidth(),width));
             n.render(g);
         }
     }

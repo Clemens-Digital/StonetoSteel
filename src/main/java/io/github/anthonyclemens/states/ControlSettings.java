@@ -15,6 +15,7 @@ import org.newdawn.slick.util.Log;
 import com.codedisaster.steamworks.SteamAPI;
 
 import io.github.anthonyclemens.GUI.Banner;
+import io.github.anthonyclemens.GUI.Buttons.Button;
 import io.github.anthonyclemens.GUI.Buttons.ImageTextButton;
 import io.github.anthonyclemens.GameStates;
 import io.github.anthonyclemens.Math.TwoDimensionMath;
@@ -77,7 +78,8 @@ public class ControlSettings extends BasicGameState{
 
     @Override
     public void update(GameContainer container, StateBasedGame game, int delta) throws SlickException {
-        for(ImageTextButton itb : menuButtons){
+        SteamAPI.runCallbacks();
+        /*for(ImageTextButton itb : menuButtons){
             itb.update(container.getInput()); // Sets the isClicked bool
             if(itb.isClicked()){
                 switch(itb.getText()){ // Figure out what button was pressed
@@ -90,7 +92,22 @@ public class ControlSettings extends BasicGameState{
                     }
                 }
             }
+        }*/
+        menuButtons.stream().forEach(itb -> itb.update(container.getInput()));
+        ImageTextButton clickedItb = menuButtons.stream()
+            .filter(Button::isClicked)
+            .findFirst()
+            .orElse(null);
+        if(clickedItb==null) return;
+        switch(clickedItb.getText()){
+            case "Back"-> {
+                if(SharedData.getLastState() == GameStates.PAUSE_MENU) {
+                    SharedData.enterState(GameStates.PAUSE_MENU, game);
+                } else {
+                    SharedData.enterState(GameStates.SETTINGS_MENU, game);
+                }
+            }
+            default -> {}
         }
-        SteamAPI.runCallbacks();
     }
 }

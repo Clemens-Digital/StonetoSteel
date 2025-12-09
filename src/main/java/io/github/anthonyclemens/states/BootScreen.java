@@ -63,8 +63,9 @@ public class BootScreen extends BasicGameState{
 
     @Override
     public void update(GameContainer container, StateBasedGame game, int delta) throws SlickException {
-        if(container.getInput().isKeyPressed(Input.KEY_SPACE)) {
+        if(container.getInput().isKeyPressed(Input.KEY_SPACE)||container.getInput().isMouseButtonDown(Input.MOUSE_LEFT_BUTTON)) {
             bootSound.stop();
+            bootBox.stopAllSounds();
             game.enterState(GameStates.MAIN_MENU.getID());
         }
         // Start Delay

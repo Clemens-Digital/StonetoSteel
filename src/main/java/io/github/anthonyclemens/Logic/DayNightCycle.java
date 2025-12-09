@@ -20,6 +20,8 @@ public class DayNightCycle implements Serializable {
     private final Color nightColor = new Color(15, 15, 64, 150);     // Dark blue tint
     private Color currentOverlayColor = Color.black; // Default to night
     private float lastUpdateTime = 0.0f;
+    private final DateTime currentDateTime;
+    private final DateTime startDateTime;
 
 
     /**
@@ -34,6 +36,8 @@ public class DayNightCycle implements Serializable {
         this.sunriseTime=riseTime;
         this.sunsetTime=setTime;
         this.calender=calender;
+        this.currentDateTime = new DateTime(calender.getMonth(), calender.getDay(), calender.getYear(), (int)timeOfDay, Math.round((timeOfDay-(int)timeOfDay)*60));
+        this.startDateTime = new DateTime(this.currentDateTime);
     }
 
     /**
@@ -46,7 +50,13 @@ public class DayNightCycle implements Serializable {
         if (timeOfDay >= 24.0f) {
             timeOfDay -= 24.0f; // Reset to the next day
             calender.incrementDay();
+            currentDateTime.setDay(calender.getDay());
+            currentDateTime.setMonth(calender.getMonth());
+            currentDateTime.setYear(calender.getYear());
         }
+        int hours = (int)timeOfDay;
+        currentDateTime.setHour(hours);
+        currentDateTime.setMinute(Math.round((timeOfDay-hours)*60));
         updateOverlayColor();
     }
 
@@ -156,4 +166,32 @@ public class DayNightCycle implements Serializable {
         return hours+":"+String.format("%02d", minutes)+" "+end;
     }
 
+     /**
+     * Sets the current Time
+     * @param hour   Hour, 24h format
+     * @param min    Minute, 60m format
+     * @param sec    Second, 60s format
+     */
+    public void setTime(int hour, int min, int sec) {
+        if (hour < 0) hour = 0;
+        if (hour > 23) hour = 23;
+        if (min < 0) min = 0;
+        if (min > 59) min = 59;
+        if (sec < 0) sec = 0;
+        if (sec > 59) sec = 59;
+
+        this.timeOfDay = hour
+                    + (min / 60.0f)
+                    + (sec / 3600.0f);
+
+        updateOverlayColor();
+    }
+
+    public Calender getCalender(){
+        return this.calender;
+    }
+
+    public DateTime getCurrentDateTime(){
+        return this.currentDateTime;
+    }
 }

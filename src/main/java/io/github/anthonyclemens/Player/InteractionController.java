@@ -38,26 +38,27 @@ public class InteractionController {
             obj.setHover(true);
             if (!leftPressed && !rightPressed) continue;
 
-            // right click: pick up items or use object (contextual)
-            if (rightPressed) {
-                if (isItem(obj)) {
-                    Items itemType = Items.valueOf(obj.getName());
-                    int quantity = ((Item) obj).getQuantity();
+            // left or right click: pick up item
+            if (isItem(obj)) {
+                Items itemType = Items.valueOf(obj.getName());
+                int quantity = ((Item) obj).getQuantity();
+                if (playerInventory.addItem(itemType, quantity)) {
+                    iterator.remove();
+                }
+                continue;
+            }
 
-                    if (playerInventory.addItem(itemType, quantity)) {
-                        iterator.remove();
-                    }
-                } else {
-                    try {
-                        obj.onUse(player, player.getEquippedItem());
-                    } catch (Exception e) {
-                        Log.debug("Error onUse for " + obj.getName() + " : " + e.getMessage());
-                    }
+            // right click: use object
+            if (rightPressed) {
+                try {
+                    obj.onUse(player, player.getEquippedItem());
+                } catch (Exception e) {
+                    Log.debug("Error onUse for " + obj.getName() + " : " + e.getMessage());
                 }
             }
 
             // left click: hit object
-            if (leftPressed && !isItem(obj)) {
+            if (leftPressed) {
                 try {
                     obj.onHit(player, player.getEquippedItem());
                 } catch (Exception e) {

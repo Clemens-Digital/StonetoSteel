@@ -18,6 +18,8 @@ import org.newdawn.slick.util.Log;
 
 import com.codedisaster.steamworks.SteamAPI;
 
+import io.github.anthonyclemens.Achievements.Achievement;
+import io.github.anthonyclemens.Achievements.AchievementType;
 import io.github.anthonyclemens.GameObjects.Building.MultiTileObject;
 import io.github.anthonyclemens.GameObjects.Mobs.Fish;
 import io.github.anthonyclemens.GameObjects.Mobs.Spider;
@@ -25,6 +27,7 @@ import io.github.anthonyclemens.GameObjects.Mobs.Zombie;
 import io.github.anthonyclemens.GameObjects.SingleTileObjects.SingleTileObject;
 import io.github.anthonyclemens.GameStates;
 import io.github.anthonyclemens.Logic.Calender;
+import io.github.anthonyclemens.Logic.DateTime;
 import io.github.anthonyclemens.Logic.DayNightCycle;
 import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.Camera;
@@ -34,7 +37,6 @@ import io.github.anthonyclemens.SharedData;
 import io.github.anthonyclemens.Sound.JukeBox;
 import io.github.anthonyclemens.Sound.SoundBox;
 import io.github.anthonyclemens.Utils;
-import io.github.anthonyclemens.Achievements.Achievement;
 import io.github.anthonyclemens.WorldGen.Chunk;
 import io.github.anthonyclemens.WorldGen.World;
 import io.github.anthonyclemens.utils.AmbientSoundManager;
@@ -64,10 +66,10 @@ public class Game extends BasicGameState{
     private Image backgroundImage;
     private static final float MIN_ZOOM = 0.4f;
     private static final float DEBUG_MIN_ZOOM = 0.1f;
-    private static final float DAY_LENGTH = 20f; // Length of a day in minutes
+    private static final float DAY_LENGTH = 2f; // Length of a day in minutes
     private static final float SUNRISE_TIME = 7f;
     private static final float SUNSET_TIME = 19f;
-    private static final int CALENDER_YEAR = 1462;
+    private static final DateTime START_DATE_TIME = new DateTime(1, 1, 1462, 8, 0);
 
     // Game Objects
     private Input input;
@@ -120,7 +122,7 @@ public class Game extends BasicGameState{
 
         initSharedData();
         initWorld(container);
-        initRenderer(container);
+        initRenderer();
         initAudio();
         initDebugging();
         zoom = 1f;
@@ -170,19 +172,20 @@ public class Game extends BasicGameState{
         renderer.update(container, zoom, cameraX, cameraY, env.isSunUp());
         if(showHUD) displayHUD.updateHUD(delta, player);
         updateProfiler.tick("Renderer update");
-        renderer.calculateHitbox(renderer, player);
+        int[] playerLoc = renderer.screenToIsometric(player.getRenderX()+player.getHitbox().getWidth()/2, player.getRenderY()+player.getHitbox().getHeight());
+        renderer.calculateHitbox(renderer, playerLoc[2], playerLoc[3]);
         updateProfiler.tick("Hitbox Calculation");
 
         updateKeyboard(game, delta, input);
         updateMouse(input);
         updateProfiler.tick("Input updates");
 
-        int[] playerLoc = renderer.screenToIsometric(player.getRenderX()+player.getHitbox().getWidth()/2, player.getRenderY()+player.getHitbox().getHeight());
         Chunk currentChunk = chunkManager.getChunk(playerLoc[2], playerLoc[3]);
         player.update(input, delta, playerLoc, currentChunk, paused);
         updateProfiler.tick("Player update");
         if(!paused) {
             collisionHandler.checkPlayerCollision(player, chunkManager.getChunk(playerLoc[2], playerLoc[3]));
+            if(env.getCurrentDateTime().isDaysAfter(START_DATE_TIME, 1)) player.getAchievementManager().recordProgress(AchievementType.SURVIVE);
             //collisionHandler.checkMobCollision(chunkManager);
         }
         updateProfiler.tick("Collision handler");
@@ -195,7 +198,7 @@ public class Game extends BasicGameState{
             updateProfiler.tick("Player interaction");
 
             env.updateDayNightCycle(delta);
-            renderer.updateChunksAroundPlayer(delta,player,env);
+            renderer.updateChunksAroundPlayer(delta,player,env,playerLoc[2], playerLoc[3]);
             updateProfiler.tick("Update Visible Chunks and GameObjects");
         }
     }
@@ -281,6 +284,9 @@ public class Game extends BasicGameState{
             Chunk clickedChunk = chunkManager.getChunk(clickedLoc[2], clickedLoc[3]);
             SingleTileObject log = new SingleTileObject("main", "log", 30, clickedLoc[0], clickedLoc[1], clickedLoc[2], clickedLoc[3]);
             clickedChunk.addGameObject(log);
+        }
+        if(input.isKeyPressed(Input.KEY_N)){
+            env.setTime(19,30,0);
         }
     }
 
@@ -387,10 +393,10 @@ public class Game extends BasicGameState{
         if (SharedData.isNewGame() || !SaveLoadManager.exists(SharedData.getSaveFilePath())) {
             chunkManager = new World(new Random(Sys.getTime()).nextInt());
             createNewPlayer(container.getWidth() / 2f, container.getHeight() / 2f, 0.075f, 100, null);
-            calender = new Calender(1, 1, CALENDER_YEAR);
+            calender = new Calender(START_DATE_TIME.getDay(), START_DATE_TIME.getMonth(), START_DATE_TIME.getYear());
             env = new DayNightCycle(DAY_LENGTH, SUNRISE_TIME, SUNSET_TIME, calender);
         } else {
-            saveLoadManager.loadGame(SharedData.getSaveFilePath(), container);
+            saveLoadManager.loadGame(SharedData.getSaveFilePath());
             chunkManager = saveLoadManager.getRenderer().getChunkManager();
             createNewPlayer(
                 saveLoadManager.getPlayerX(),
@@ -399,16 +405,16 @@ public class Game extends BasicGameState{
                 saveLoadManager.getPlayerHealth(),
                 saveLoadManager.getPlayerAchievements()
             );
-            calender = new Calender(1, 1, CALENDER_YEAR);
             env = saveLoadManager.getDayNightCycle();
+            calender = saveLoadManager.getDayNightCycle().getCalender();
             player.setPlayerInventory(saveLoadManager.getPlayerInventory());
         }
         camera = new Camera(player.getX(), player.getY());
         SharedData.setLoadingSave(false);
     }
 
-    private void initRenderer(GameContainer container) {
-        renderer = new IsoRenderer(zoom, "main", chunkManager, container);
+    private void initRenderer() {
+        renderer = new IsoRenderer(zoom, "main", chunkManager);
     }
 
     private void initAudio() {

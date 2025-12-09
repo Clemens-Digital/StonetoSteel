@@ -35,7 +35,7 @@ public abstract class GUIElement {
     }
 
     public void setY(float y) {
-        this.r.setX(y);
+        this.r.setY(y);
     }
 
     public void move(float x, float y){

@@ -1,20 +1,23 @@
 package io.github.anthonyclemens.Achievements;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.newdawn.slick.SlickException;
 import org.newdawn.slick.util.Log;
 
-public class AchievementManager {
+import io.github.anthonyclemens.Rendering.FontManager;
+
+public class AchievementManager implements Serializable{
 
     private final List<Achievement> achievements = new ArrayList<>();
-    private final List<AchievementNotification> notifications = new ArrayList<>();
+    private final transient List<AchievementNotification> notifications = new ArrayList<>();
 
     public AchievementManager() {
         // Initialize all achievements from the enum
-        for (Achievement achievement : Achievement.values()) {
-            achievements.add(achievement);
-        }
+        achievements.addAll(Arrays.asList(Achievement.values()));
     }
 
     public AchievementManager(List<Achievement> loadedAchievements) {
@@ -26,11 +29,11 @@ public class AchievementManager {
     /**
      * Record progress for a specific achievement.
      */
-    public void recordProgress(Achievement achievement) {
+    public void recordProgress(Achievement achievement) throws SlickException{
         achievement.incrementStep();
         if (achievement.isUnlocked()) {
             Log.debug("Unlocked achievement: " + achievement.getName());
-            notifications.add(new AchievementNotification(achievement, -50f, 500f));
+            notifications.add(new AchievementNotification(achievement, FontManager.getFont("MedievalTimes", 24), FontManager.getFont("Roboto", 24), -50f, 0f));
         }
     }
 
@@ -43,8 +46,12 @@ public class AchievementManager {
             .forEach(a -> {
                 a.incrementStep();
                 if (a.isUnlocked()) {
-                    Log.debug("Unlocked achievement: " + a.getName());
-                    notifications.add(new AchievementNotification(a, -50f, 50f));
+                    try {
+                        Log.debug("Unlocked achievement: " + a.getName());
+                        notifications.add(new AchievementNotification(a, FontManager.getFont("MedievalTimes", 24), FontManager.getFont("Roboto", 24), -50f, 0f));
+                    } catch (SlickException ex) {
+                        Log.error(ex.getMessage());
+                    }
                 }
             });
     }

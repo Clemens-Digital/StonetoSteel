@@ -70,4 +70,16 @@ public class Calender implements Serializable {
         String monthName = MONTH_NAMES[month - 1];
         return String.format("%s %02d, %04d", monthName, day, year);
     }
+
+    public int getDay(){
+        return this.day;
+    }
+
+    public int getMonth(){
+        return this.month;
+    }
+
+    public int getYear(){
+        return this.year;
+    }
 }

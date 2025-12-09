@@ -13,12 +13,12 @@ import io.github.anthonyclemens.states.Game;
 
 public class BerryBush extends SingleTileObject{
 
-    private final long shakeDuration = 250; // When shaking should end
+    private static final long SHAKE_DURATION = 250; // When shaking should end
     private transient long lastDamageTime = 0; // Timestamp of last time damage was taken (milliseconds)
     private transient long endShakeTime = 0; // Timestamp when shaking should end
-    private final static long DAMAGE_COOLDOWN_DEFAULT = 500;
+    private static final long DAMAGE_COOLDOWN_DEFAULT = 500;
     private long damageCooldown = DAMAGE_COOLDOWN_DEFAULT; // Cooldown time between damage in milliseconds
-    private final int shakeAggression = 3; // How much the grass shakes when hit
+    private static final int SHAKE_AGGRESSION = 3; // How much the grass shakes when hit
     private transient float offsetX = 0; // Offset for shaking effect
     private transient float offsetY = 0; // Offset for shaking effect
     private final Random rand;
@@ -58,8 +58,8 @@ public class BerryBush extends SingleTileObject{
         }
         super.update(r, deltaTime);
         if(System.currentTimeMillis() < endShakeTime){
-            offsetX = rand.nextInt(shakeAggression) - shakeAggression / 2f;
-            offsetY = rand.nextInt(shakeAggression) - shakeAggression / 2f;
+            offsetX = rand.nextInt(SHAKE_AGGRESSION) - SHAKE_AGGRESSION / 2f;
+            offsetY = rand.nextInt(SHAKE_AGGRESSION) - SHAKE_AGGRESSION / 2f;
         }
     }
 
@@ -74,7 +74,7 @@ public class BerryBush extends SingleTileObject{
             dropItem = true;
             this.health = 0;
         }
-        endShakeTime = now + shakeDuration;
+        endShakeTime = now + SHAKE_DURATION;
         lastDamageTime = now;
         Game.gameObjectSoundBox.playRandomSound("smallTreeHitSounds");
     }
@@ -82,7 +82,7 @@ public class BerryBush extends SingleTileObject{
     @Override
     public void onHit(Player player, Items item){
         if(item.getItemType()==ItemType.AXE){
-            damageCooldown = (long)((float)DAMAGE_COOLDOWN_DEFAULT/item.getSpeed());
+            damageCooldown = (long)(DAMAGE_COOLDOWN_DEFAULT/item.getSpeed());
             this.removeHealth(item.getDamage());
         }else{
             damageCooldown = DAMAGE_COOLDOWN_DEFAULT;
