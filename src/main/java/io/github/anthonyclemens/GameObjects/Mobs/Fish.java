@@ -61,9 +61,4 @@ public class Fish extends Mob{
         lastDamageTime = now;
         hurtFlashEndTime = now + HURT_FLASH_DURATION_MS; // Set flash timer
     }
-
-    @Override
-    public void onHit(Player player, Items item){
-        this.removeHealth(item.getDamage());
-    }
 }

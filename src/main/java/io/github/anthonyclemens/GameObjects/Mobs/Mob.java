@@ -385,5 +385,7 @@ public class Mob extends GameObject {
     @Override
     public void onUse(Player player, Items item) {}
     @Override
-    public void onHit(Player player, Items item) {}
+    public void onHit(Player player, Items item) {
+        this.removeHealth(item.getDamage());
+    }
 }

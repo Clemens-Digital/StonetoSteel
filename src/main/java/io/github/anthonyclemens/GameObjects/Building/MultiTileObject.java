@@ -1,4 +1,4 @@
-package io.github.anthonyclemens.GameObjects;
+package io.github.anthonyclemens.GameObjects.Building;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,6 +13,8 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.util.Log;
 
+import io.github.anthonyclemens.GameObjects.GameObject;
+import io.github.anthonyclemens.GameObjects.Items;
 import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
 import io.github.anthonyclemens.Rendering.SpriteManager;

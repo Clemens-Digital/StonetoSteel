@@ -4,6 +4,8 @@ import java.util.Random;
 
 import org.newdawn.slick.Color;
 
+import io.github.anthonyclemens.Achievements.Achievement;
+import io.github.anthonyclemens.Achievements.AchievementType;
 import io.github.anthonyclemens.GameObjects.ItemType;
 import io.github.anthonyclemens.GameObjects.Items;
 import io.github.anthonyclemens.Player.Player;
@@ -151,6 +153,7 @@ public class Tree extends SingleTileObject{
             damageCooldown = DAMAGE_COOLDOWN_DEFAULT;
             removeHealth(1);
         }
+        if(this.health<=0) player.getAchievementManager().recordProgress(AchievementType.TREE_CHOPPING);
     }
 
 }

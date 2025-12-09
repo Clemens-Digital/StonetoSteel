@@ -312,7 +312,6 @@ public class IsoRenderer {
 
     //Setters
 
-
     public World getChunkManager(){
         return this.chunkManager;
     }

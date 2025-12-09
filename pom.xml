@@ -6,7 +6,7 @@
 
     <groupId>io.github.anthonyclemens</groupId>
     <artifactId>stonetosteel</artifactId>
-    <version>0.0.7</version>
+    <version>a0.0.8</version>
 
     <properties>
         <slick2d.version>1.0.2</slick2d.version>

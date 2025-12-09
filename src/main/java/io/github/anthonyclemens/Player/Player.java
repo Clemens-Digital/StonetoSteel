@@ -1,5 +1,6 @@
 package io.github.anthonyclemens.Player;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +20,8 @@ import io.github.anthonyclemens.Rendering.SpriteManager;
 import io.github.anthonyclemens.Settings;
 import io.github.anthonyclemens.Sound.SoundBox;
 import io.github.anthonyclemens.Utils;
+import io.github.anthonyclemens.Achievements.Achievement;
+import io.github.anthonyclemens.Achievements.AchievementManager;
 import io.github.anthonyclemens.WorldGen.Biome;
 import io.github.anthonyclemens.WorldGen.Chunk;
 import io.github.anthonyclemens.WorldGen.World;
@@ -50,6 +53,7 @@ public class Player {
     private final InteractionController interactor;
     private Items equippedItem;
     private transient IsoRenderer renderer;
+    private final AchievementManager achievementManager;
 
     // Player health properties
     private byte health; // Player health
@@ -71,7 +75,7 @@ public class Player {
     // Ouch sound
     private final List<String> ouch = Utils.getFilePaths("sounds/Player/Hurt/ouch", 1, 2); // Ouch sounds
 
-    public Player(float startX, float startY, float speed) {
+    public Player(float startX, float startY, float speed, List<Achievement> achievements) {
         Settings settings = Settings.getInstance(); // Get settings instance
         loadAnimations();
         this.x = startX;
@@ -79,6 +83,11 @@ public class Player {
         this.maxHealth = 100; // Initialize max health
         this.health = this.maxHealth; // Initialize health
         this.defaultSpeed = speed;
+        if(achievements == null){
+            this.achievementManager = new AchievementManager();
+        }else{
+            this.achievementManager = new AchievementManager(achievements);
+        }   
         this.playerSoundBox = new SoundBox(); // Initialize SoundBox
         this.interactor = new InteractionController();
         if(animations[0] != null) {
@@ -96,7 +105,7 @@ public class Player {
             this.playerSoundBox.setVolume(settings.getPlayerVolume()*settings.getMainVolume()); // Set volume for player sounds
         } else {
             // Fallback if animations are not provided
-            Log.warn("Animations not provided or empty. Using default hitbox size.");
+            Log.debug("Animations not provided or empty. Using default hitbox size.");
             this.hitbox = new Rectangle(this.x, this.y, 16, 16); // Default size
         }
     }
@@ -468,5 +477,13 @@ public class Player {
 
     public Chunk getCurrentChunk() {
         return this.currentChunk;
+    }
+
+    public AchievementManager getAchievementManager() {
+        return this.achievementManager;
+    }
+
+    public List<Achievement> getPlayerAchievements() {
+        return this.achievementManager.getAllAchievements();
     }
 }

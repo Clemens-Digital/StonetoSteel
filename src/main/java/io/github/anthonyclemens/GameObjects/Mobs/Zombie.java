@@ -1,5 +1,8 @@
 package io.github.anthonyclemens.GameObjects.Mobs;
 
+import io.github.anthonyclemens.Achievements.AchievementType;
+import io.github.anthonyclemens.GameObjects.Items;
+import io.github.anthonyclemens.Player.Player;
 import io.github.anthonyclemens.Rendering.IsoRenderer;
 import io.github.anthonyclemens.Rendering.SpriteManager;
 import io.github.anthonyclemens.WorldGen.Biome;
@@ -31,5 +34,11 @@ public class Zombie extends Mob{
             this.removeHealth(this.rand.nextInt(3));
             this.mobSpeed=4f;
         }
+    }
+
+    @Override
+    public void onHit(Player player, Items item) {
+        this.removeHealth(item.getDamage());
+        if(health<=0) player.getAchievementManager().recordProgress(AchievementType.ZOMBIE_SLAYING);
     }
 }

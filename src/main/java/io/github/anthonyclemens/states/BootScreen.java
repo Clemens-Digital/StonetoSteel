@@ -32,7 +32,7 @@ public class BootScreen extends BasicGameState{
     private SoundBox bootBox;
     private static final int FADE_INTERVAL = 5;
     private static final int LOGO_REVEAL_INTERVAL = 10;
-    private static final int NAME_REVEAL_INTERVAL = 650;
+    private static final int NAME_REVEAL_INTERVAL = 300;
     private static final int START_DELAY = 850;
     private static final String CD = "Clemens Digital";
     private String nameString = "";

@@ -21,6 +21,7 @@ import java.util.zip.GZIPOutputStream;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.util.Log;
 
+import io.github.anthonyclemens.Achievements.Achievement;
 import io.github.anthonyclemens.Logic.DayNightCycle;
 import io.github.anthonyclemens.Player.Inventory;
 import io.github.anthonyclemens.Player.Player;
@@ -39,6 +40,7 @@ public class SaveLoadManager {
     private float playerSpeed;
     private int playerHealth;
     private Inventory playerInventory;
+    private List<Achievement> playerAchievements;
 
     public void saveGame(String folderPath, DayNightCycle env, World chunkManager, Camera camera, Player player) {
         Path saveRoot = Paths.get(folderPath);
@@ -53,11 +55,12 @@ public class SaveLoadManager {
         Log.debug("Player data size: " + getSerializedSize(new float[]{player.getX(), player.getY(), player.getSpeed()}));
         Log.debug("Player health size: " + getSerializedSize(player.getHealth()));
         Log.debug("Player Inventory size: " + getSerializedSize(player.getPlayerInventory()));
+        Log.debug("Player Achievements size: " + getSerializedSize(player.getAchievementManager().getAllAchievements()));
 
         // Save individual components
         saveGzippedObject(saveRoot.resolve("environment.dat"), env);
         saveGzippedObject(saveRoot.resolve("camera.dat"), camera);
-        saveGzippedObject(saveRoot.resolve("player.dat"), player.getX(), player.getY(), player.getSpeed(), player.getHealth(),player.getPlayerInventory());
+        saveGzippedObject(saveRoot.resolve("player.dat"), player.getX(), player.getY(), player.getSpeed(), player.getHealth(),player.getPlayerInventory(),player.getPlayerAchievements());
         saveGzippedObject(saveRoot.resolve("seed.dat"), chunkManager.getSeed());
 
         // Save chunks in 32x32 region groups
@@ -136,6 +139,7 @@ public class SaveLoadManager {
             this.playerSpeed = (float) playerIn.readObject();
             this.playerHealth = (int) playerIn.readObject();
             this.playerInventory = (Inventory) playerIn.readObject();
+            this.playerAchievements = (List<Achievement>) playerIn.readObject();
             Log.debug("Loaded Player");
 
             int seed = (int) seedIn.readObject();
@@ -282,4 +286,5 @@ public class SaveLoadManager {
     public float getPlayerSpeed() { return playerSpeed; }
     public int getPlayerHealth() { return playerHealth; }
     public Inventory getPlayerInventory() { return playerInventory; }
+    public List<Achievement> getPlayerAchievements() { return playerAchievements; }
 }

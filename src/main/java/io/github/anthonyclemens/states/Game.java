@@ -1,5 +1,6 @@
 package io.github.anthonyclemens.states;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -17,10 +18,10 @@ import org.newdawn.slick.util.Log;
 
 import com.codedisaster.steamworks.SteamAPI;
 
+import io.github.anthonyclemens.GameObjects.Building.MultiTileObject;
 import io.github.anthonyclemens.GameObjects.Mobs.Fish;
 import io.github.anthonyclemens.GameObjects.Mobs.Spider;
 import io.github.anthonyclemens.GameObjects.Mobs.Zombie;
-import io.github.anthonyclemens.GameObjects.MultiTileObject;
 import io.github.anthonyclemens.GameObjects.SingleTileObjects.SingleTileObject;
 import io.github.anthonyclemens.GameStates;
 import io.github.anthonyclemens.Logic.Calender;
@@ -33,6 +34,7 @@ import io.github.anthonyclemens.SharedData;
 import io.github.anthonyclemens.Sound.JukeBox;
 import io.github.anthonyclemens.Sound.SoundBox;
 import io.github.anthonyclemens.Utils;
+import io.github.anthonyclemens.Achievements.Achievement;
 import io.github.anthonyclemens.WorldGen.Chunk;
 import io.github.anthonyclemens.WorldGen.World;
 import io.github.anthonyclemens.utils.AmbientSoundManager;
@@ -166,6 +168,7 @@ public class Game extends BasicGameState{
         }
         updateProfiler.tick("SteamAPI Callback, Sound and Music");
         renderer.update(container, zoom, cameraX, cameraY, env.isSunUp());
+        if(showHUD) displayHUD.updateHUD(delta, player);
         updateProfiler.tick("Renderer update");
         renderer.calculateHitbox(renderer, player);
         updateProfiler.tick("Hitbox Calculation");
@@ -383,7 +386,7 @@ public class Game extends BasicGameState{
     private void initWorld(GameContainer container) {
         if (SharedData.isNewGame() || !SaveLoadManager.exists(SharedData.getSaveFilePath())) {
             chunkManager = new World(new Random(Sys.getTime()).nextInt());
-            createNewPlayer(container.getWidth() / 2f, container.getHeight() / 2f, 0.075f, 100);
+            createNewPlayer(container.getWidth() / 2f, container.getHeight() / 2f, 0.075f, 100, null);
             calender = new Calender(1, 1, CALENDER_YEAR);
             env = new DayNightCycle(DAY_LENGTH, SUNRISE_TIME, SUNSET_TIME, calender);
         } else {
@@ -393,7 +396,8 @@ public class Game extends BasicGameState{
                 saveLoadManager.getPlayerX(),
                 saveLoadManager.getPlayerY(),
                 saveLoadManager.getPlayerSpeed(),
-                saveLoadManager.getPlayerHealth()
+                saveLoadManager.getPlayerHealth(),
+                saveLoadManager.getPlayerAchievements()
             );
             calender = new Calender(1, 1, CALENDER_YEAR);
             env = saveLoadManager.getDayNightCycle();
@@ -431,8 +435,8 @@ public class Game extends BasicGameState{
         player.setVolume(settings.getMainVolume()*settings.getPlayerVolume());
     }
 
-    private void createNewPlayer(float x, float y, float speed, int health){
-        player = new Player(x, y, speed);
+    private void createNewPlayer(float x, float y, float speed, int health, List<Achievement> achievements) {
+        player = new Player(x, y, speed, achievements);
         player.setHealth(health);
     }
 }

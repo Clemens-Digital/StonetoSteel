@@ -23,14 +23,14 @@ public class SaveLoadManagerTest {
         saveLoadManager = new SaveLoadManager();
         World chunkManager = new World(123456);
         preSaveRenderer = new IsoRenderer(123, null, chunkManager, null);
-        preSavePlayer = new Player(123, 123, 123);
+        preSavePlayer = new Player(123, 123, 123, null);
         preSavePlayer.setVolume(0f);
         preSavePlayer.subtractHealth(99);
         saveLoadManager.saveGame("saves/testSave",null,chunkManager,null,preSavePlayer);
 
         saveLoadManager.loadGame("saves/testSave", null);
         postLoadRenderer = saveLoadManager.getRenderer();
-        postLoadPlayer = new Player(saveLoadManager.getPlayerX(), saveLoadManager.getPlayerY(), saveLoadManager.getPlayerSpeed());
+        postLoadPlayer = new Player(saveLoadManager.getPlayerX(), saveLoadManager.getPlayerY(), saveLoadManager.getPlayerSpeed(), saveLoadManager.getPlayerAchievements());
         postLoadPlayer.setHealth(saveLoadManager.getPlayerHealth());
     }
 
